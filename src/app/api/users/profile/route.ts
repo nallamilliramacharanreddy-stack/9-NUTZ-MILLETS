@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest) {
     const validation = schemas.profileUpdate.safeParse(body);
     
     if (!validation.success) {
-      return securityResponse(validation.error.errors[0]?.message || 'Invalid input', 400);
+      return securityResponse(validation.error.issues[0]?.message || 'Invalid input', 400);
     }
 
     const { name, phone } = validation.data;
