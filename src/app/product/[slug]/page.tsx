@@ -124,18 +124,18 @@ export default function ProductDetail() {
           altPhone: formData.altPhone,
           address: formData.address,
         },
-        product: {
+        orderItems: [{
           id: product._id,
           name: product.name,
           price: product.price,
           quantity: quantity,
           image: product.images?.[0]
-        },
+        }],
         payment: {
           method: paymentMethod,
           surcharge: paymentMethod === 'cod' ? codSurcharge : 0,
-          totalAmount: total
-        }
+        },
+        totalPrice: total
       };
 
       // 1. Initialize Order in Backend (and create Razorpay Order if PhonePe)

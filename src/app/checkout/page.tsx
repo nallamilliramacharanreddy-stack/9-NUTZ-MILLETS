@@ -112,16 +112,17 @@ export default function CheckoutPage() {
         location: { lat: formData.lat, lng: formData.lng }
       },
       orderItems: cartItems.map(item => ({
-        productId: item._id,
+        id: item._id,
         name: item.name,
         quantity: item.quantity,
-        image: item.images[0] || '',
+        image: item.images?.[0] || '',
         price: item.price
       })),
-      itemsPrice: subtotal,
-      shippingPrice: shipping,
       totalPrice: total,
-      paymentMethod: 'COD',
+      shippingPrice: shipping,
+      payment: {
+        method: 'cod',
+      },
       distance: distance
     };
 

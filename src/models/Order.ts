@@ -8,13 +8,13 @@ export interface IDirectOrder {
     altPhone?: string;
     address: string;
   };
-  product: {
+  items: {
     id: string;
     name: string;
     price: number;
     quantity: number;
     image?: string;
-  };
+  }[];
   payment: {
     method: 'phonepe' | 'cod';
     status: 'pending' | 'completed' | 'failed';
@@ -36,13 +36,15 @@ const directOrderSchema = new Schema<IDirectOrder>(
       altPhone: { type: String },
       address: { type: String, required: true },
     },
-    product: {
-      id: { type: String, required: true },
-      name: { type: String, required: true },
-      price: { type: Number, required: true },
-      quantity: { type: Number, required: true },
-      image: { type: String },
-    },
+    items: [
+      {
+        id: { type: String, required: true },
+        name: { type: String, required: true },
+        price: { type: Number, required: true },
+        quantity: { type: Number, required: true },
+        image: { type: String },
+      }
+    ],
     payment: {
       method: { type: String, required: true, enum: ['phonepe', 'cod'] },
       status: { type: String, required: true, default: 'pending', enum: ['pending', 'completed', 'failed'] },

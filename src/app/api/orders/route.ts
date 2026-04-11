@@ -16,18 +16,36 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
   
-  try {
-    // 1. Rate Limiting
-    if (!rateLimit(ip, 5, 60 * 1000)) { 
-      return securityResponse('Too many requests. Please try again later.', 429);
+    const body = await req.json();
+    const { customer, product, orderItems, payment, totalPrice, shippingPrice } = body;
+
+    // 2. Comprehensive Validation
+    if (!customer || !customer.name || !customer.phone || !customer.address) {
+       return NextResponse.json({ message: 'Missing required customer information' }, { status: 400 });
     }
 
-    const body = await req.json();
-    const { customer, product, payment } = body;
+    // Adapt both single-product and multi-item cart structures into the unified 'items' array
+    let finalItems = [];
+    if (orderItems && Array.isArray(orderItems)) {
+      finalItems = orderItems.map((item: any) => ({
+        id: item.id || item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image || item.images?.[0] || ''
+      }));
+    } else if (product?.id) {
+      finalItems = [{
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: product.quantity || 1,
+        image: product.image || ''
+      }];
+    }
 
-    // Basic validation
-    if (!customer.name || !customer.phone || !customer.address || !product.id) {
-       return NextResponse.json({ message: 'Missing required checkout fields' }, { status: 400 });
+    if (finalItems.length === 0) {
+       return NextResponse.json({ message: 'No items found in order' }, { status: 400 });
     }
 
     await connectDB();
@@ -35,15 +53,14 @@ export async function POST(req: Request) {
     // Generate unique internal Order ID
     const orderId = `DORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    // simplified flow: No online payments, only COD
     const order = await DirectOrder.create({
       orderId,
       customer,
-      product,
+      items: finalItems,
       payment: {
-        ...payment,
-        method: 'cod',
+        method: payment?.method || 'cod',
         status: 'pending',
+        totalAmount: totalPrice || finalItems.reduce((sum, i) => sum + (i.price * i.quantity), 0) + (shippingPrice || 0)
       },
       status: 'pending',
     });

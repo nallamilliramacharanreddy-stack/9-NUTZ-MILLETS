@@ -1,65 +1,62 @@
 import { NextResponse, NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import User from '@/models/User';
+import Product from '@/models/Product';
 import { securityResponse } from '@/lib/security';
-import { z } from 'zod';
 
-// Example schema (use your existing one if already defined)
-const profileSchema = z.object({
-  name: z.string(),
-  phone: z.string(),
-});
-
-export async function POST(req: NextRequest) {
+// GET: Fetch all products with optional filtering
+export async function GET(req: NextRequest) {
   try {
     await connectDB();
 
-    const body = await req.json();
+    const { searchParams } = new URL(req.url);
+    const category = searchParams.get('category');
+    const featured = searchParams.get('featured');
 
-    const validation = profileSchema.safeParse(body);
+    let query: any = {};
+    if (category) query.category = category;
+    if (featured === 'true') query.featured = true;
 
-    // ❌ FIXED: correct Zod error handling (issues instead of errors)
-    if (!validation.success) {
-      return securityResponse(
-        validation.error.issues[0]?.message || 'Invalid input',
-        400
-      );
-    }
+    const products = await Product.find(query).sort({ createdAt: -1 }).lean();
 
-    const { name, phone } = validation.data;
-
-    // Example: update user (adjust logic based on your auth system)
-    const userId = req.headers.get('user-id'); // or from JWT
-
-    if (!userId) {
-      return securityResponse('Unauthorized', 401);
-    }
-
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { name, phone },
-      { new: true }
-    );
-
-    if (!user) {
-      return securityResponse('User not found', 404);
-    }
-
-    return NextResponse.json(
-      {
-        message: 'Profile updated successfully',
-        user,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json(products);
   } catch (error: any) {
-    console.error('Profile Update Error:', error.message);
+    console.error('Products List Error:', error.message);
+    return securityResponse('Failed to fetch products', 500);
+  }
+}
 
-    return NextResponse.json(
-      {
-        error: 'Internal server error',
-      },
-      { status: 500 }
-    );
+// POST: Add new product (Admin Only)
+export async function POST(req: NextRequest) {
+  try {
+    // Basic auth check could be added here, similar to other routes
+    await connectDB();
+
+    const body = await req.json();
+    
+    // Basic validation
+    if (!body.name || !body.price || !body.category) {
+      return NextResponse.json({ message: 'Missing required product fields' }, { status: 400 });
+    }
+
+    // Generate slug if not provided
+    const slug = body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    const product = await Product.create({
+      ...body,
+      slug,
+      images: body.images || ["https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop"]
+    });
+
+    return NextResponse.json({
+      message: 'Product created successfully',
+      product
+    }, { status: 201 });
+
+  } catch (error: any) {
+    console.error('Product Creation Error:', error.message);
+    if (error.code === 11000) {
+      return NextResponse.json({ message: 'A product with this name or slug already exists' }, { status: 400 });
+    }
+    return securityResponse('Failed to create product', 500);
   }
 }

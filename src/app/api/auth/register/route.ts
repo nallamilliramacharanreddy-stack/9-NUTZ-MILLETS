@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       email,
       phone,
       password: hashedPassword,
-      isVerified: false,
+      isVerified: true, // Auto-verify new users as requested
       verificationOTP: otp,
       verificationOTPExpire: otpExpire,
     });
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ 
-      message: 'OTP sent to your email. Please verify to complete registration.', 
+      message: 'Registration successful! You can now log in to your account.', 
       email 
     }, { status: 201 });
 
