@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { verifyAccessToken } from '@/lib/jwt';
 import { securityResponse } from '@/lib/security';
 import bcrypt from 'bcryptjs';
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get('accessToken')?.value;
     const decoded = token ? verifyAccessToken(token) : null;
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const token = req.cookies.get('accessToken')?.value;
     const decoded = token ? verifyAccessToken(token) : null;

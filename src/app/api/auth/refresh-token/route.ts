@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { verifyRefreshToken, signAccessToken, signRefreshToken, hashToken } from '@/lib/jwt';
 import { securityResponse, logSecurityEvent } from '@/lib/security';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
   
   try {

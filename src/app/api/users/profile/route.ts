@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { verifyAccessToken } from '@/lib/jwt';
 import { rateLimit, schemas, securityResponse, logSecurityEvent } from '@/lib/security';
 
-export async function PATCH(req: Request) {
+export async function PATCH(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
   
   try {
