@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       console.error('Validation Error Details:', validation.error.format());
       return NextResponse.json({ 
         message: 'Invalid product data', 
-        errors: (validation.error.issues || validation.error.errors || []).map((e: any) => `${e.path.join('.')}: ${e.message}`)
+        errors: validation.error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`)
       }, { status: 400 });
     }
 
