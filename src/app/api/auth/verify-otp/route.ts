@@ -54,9 +54,8 @@ export async function POST(req: Request) {
         `,
       });
 
-      // Debug
-      const fs = require('fs');
-      fs.writeFileSync('otp_debug.txt', `🔑 RESENT OTP for ${email}: ${newOtp}\nDate: ${new Date().toLocaleString()}\n`);
+      // Log sent status (Production safe)
+      console.log(`🔑 NEW OTP sent to ${email}`);
 
       return NextResponse.json({ message: 'New OTP sent to email' });
     }
