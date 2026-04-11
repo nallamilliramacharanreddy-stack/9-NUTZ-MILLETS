@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Custom test scripts
+test_*.js
+otp_debug.txt
+test_connection_tmp.js
