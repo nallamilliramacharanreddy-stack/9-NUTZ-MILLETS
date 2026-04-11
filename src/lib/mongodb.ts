@@ -1,15 +1,18 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error("MONGODB_URI missing in environment variables");
+  throw new Error("❌ MONGODB_URI is missing in environment variables");
 }
 
 let cached = (global as any).mongoose;
 
 if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+  cached = (global as any).mongoose = {
+    conn: null,
+    promise: null,
+  };
 }
 
 async function connectDB() {
@@ -20,7 +23,8 @@ async function connectDB() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts);
+    // ✅ FIX: force TypeScript to treat as string
+    cached.promise = mongoose.connect(MONGODB_URI as string, opts);
   }
 
   cached.conn = await cached.promise;
