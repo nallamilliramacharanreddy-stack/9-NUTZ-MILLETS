@@ -25,7 +25,7 @@ export default function ProductDetail() {
   
   // Checkout State
   const [showCheckout, setShowCheckout] = useState(false);
-  const [paymentMethod] = useState<'cod'>('cod');
+  const [paymentMethod] = useState<'cod' | 'phonepe'>('cod');
   const [orderStatus, setOrderStatus] = useState<'idle' | 'processing' | 'success'>('idle');
   const [formData, setFormData] = useState({
     fullName: '',
