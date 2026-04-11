@@ -15,42 +15,57 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
-  
+
+  try {
+    // ✅ Rate limit (optional but recommended)
+    if (!rateLimit(ip, 50, 60 * 1000)) {
+      return securityResponse('Too many requests', 429);
+    }
+
     const body = await req.json();
     const { customer, product, orderItems, payment, totalPrice, shippingPrice } = body;
 
-    // 2. Comprehensive Validation
+    // ✅ Validation
     if (!customer || !customer.name || !customer.phone || !customer.address) {
-       return NextResponse.json({ message: 'Missing required customer information' }, { status: 400 });
+      return NextResponse.json(
+        { message: 'Missing required customer information' },
+        { status: 400 }
+      );
     }
 
-    // Adapt both single-product and multi-item cart structures into the unified 'items' array
-    let finalItems = [];
+    // ✅ Normalize items
+    let finalItems: any[] = [];
+
     if (orderItems && Array.isArray(orderItems)) {
       finalItems = orderItems.map((item: any) => ({
         id: item.id || item.productId,
         name: item.name,
         price: item.price,
         quantity: item.quantity,
-        image: item.image || item.images?.[0] || ''
+        image: item.image || item.images?.[0] || '',
       }));
     } else if (product?.id) {
-      finalItems = [{
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: product.quantity || 1,
-        image: product.image || ''
-      }];
+      finalItems = [
+        {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: product.quantity || 1,
+          image: product.image || '',
+        },
+      ];
     }
 
     if (finalItems.length === 0) {
-       return NextResponse.json({ message: 'No items found in order' }, { status: 400 });
+      return NextResponse.json(
+        { message: 'No items found in order' },
+        { status: 400 }
+      );
     }
 
     await connectDB();
 
-    // Generate unique internal Order ID
+    // ✅ Order ID
     const orderId = `DORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     const order = await DirectOrder.create({
@@ -60,30 +75,40 @@ export async function POST(req: Request) {
       payment: {
         method: payment?.method || 'cod',
         status: 'pending',
-        totalAmount: totalPrice || finalItems.reduce((sum, i) => sum + (i.price * i.quantity), 0) + (shippingPrice || 0)
+        totalAmount:
+          totalPrice ||
+          finalItems.reduce((sum, i) => sum + i.price * i.quantity, 0) +
+          (shippingPrice || 0),
       },
       status: 'pending',
     });
 
-    return NextResponse.json({ 
-      message: 'Order placed successfully', 
-      orderId: order.orderId,
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        message: 'Order placed successfully',
+        orderId: order.orderId,
+      },
+      { status: 201 }
+    );
 
   } catch (error: any) {
     console.error('Order API Error:', error);
-    
-    // Check for Mongoose Validation Error
+
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map((err: any) => err.message);
-      return NextResponse.json({ 
-        message: 'Invalid order data: ' + messages.join(', ') 
-      }, { status: 400 });
+
+      return NextResponse.json(
+        { message: 'Invalid order data: ' + messages.join(', ') },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ 
-      message: 'Failed to save order to database. Please try again.',
-      details: error.message 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        message: 'Failed to save order to database. Please try again.',
+        details: error.message,
+      },
+      { status: 500 }
+    );
   }
 }
