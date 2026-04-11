@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     const hashedToken = hashToken(refreshToken);
-    const tokenIndex = user.refreshTokens.findIndex(rt => rt.token === hashedToken);
+    const tokenIndex = (user.refreshTokens || []).findIndex((rt: { token: string }) => rt.token === hashedToken);
 
     // 2. TOKEN REUSE DETECTION (CRITICAL SECURITY)
     // If the token is NOT in the active list, it means it's an OLD token that was already used (rotated).
