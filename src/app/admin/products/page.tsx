@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Search, MoreVertical, Edit, Trash2, Box, Info, X, Loader2, CheckCircle2, AlertCircle, Save, PackageX, PackageCheck, ImagePlus, XCircle, RefreshCw, Layers } from "lucide-react";
 
@@ -24,6 +24,29 @@ export default function AdminProducts() {
   // Edit State
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [editingSubmitting, setEditingSubmitting] = useState(false);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, isEditing = false) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit for Base64
+        alert("File is too large! Please select an image under 2MB for better performance.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        if (isEditing && editingProduct) {
+          setEditingProduct({ ...editingProduct, images: [base64String] });
+        } else {
+          setFormData({ ...formData, images: base64String });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -266,7 +289,14 @@ export default function AdminProducts() {
                      )}
                    </div>
                    
-                   <div className="relative group">
+                   <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                     <input 
+                       type="file" 
+                       ref={fileInputRef} 
+                       className="hidden" 
+                       accept="image/*"
+                       onChange={(e) => handleFileChange(e, false)}
+                     />
                      <div className={`w-full h-48 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center overflow-hidden bg-gray-50
                        ${formData.images ? 'border-brand-green/20' : 'border-gray-200 hover:border-brand-gold/50'}`}>
                        
@@ -281,7 +311,7 @@ export default function AdminProducts() {
                              }}
                            />
                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <p className="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm">Current Preview</p>
+                              <p className="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm">Click to Change</p>
                            </div>
                          </div>
                        ) : (
@@ -289,7 +319,8 @@ export default function AdminProducts() {
                             <div className="w-12 h-12 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-3">
                                <ImagePlus size={24} />
                             </div>
-                            <p className="text-gray-400 text-xs font-medium">Add a photo to make this item look delicious</p>
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest leading-tight">Upload from Gallery</p>
+                            <p className="text-[10px] text-gray-300 mt-1">Tap to select your photo</p>
                          </div>
                        )}
                      </div>
@@ -442,7 +473,14 @@ export default function AdminProducts() {
                      </button>
                    </div>
                    
-                   <div className="relative group">
+                   <div className="relative group cursor-pointer" onClick={() => editFileInputRef.current?.click()}>
+                     <input 
+                       type="file" 
+                       ref={editFileInputRef} 
+                       className="hidden" 
+                       accept="image/*"
+                       onChange={(e) => handleFileChange(e, true)}
+                     />
                      <div className="w-full h-48 rounded-2xl border-2 border-dashed border-brand-green/20 overflow-hidden bg-gray-50 flex items-center justify-center">
                        {Array.isArray(editingProduct.images) && editingProduct.images[0] ? (
                          <div className="relative w-full h-full">
@@ -455,7 +493,7 @@ export default function AdminProducts() {
                              }}
                            />
                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <p className="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm">Live Preview</p>
+                              <p className="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm">Tap to Change File</p>
                            </div>
                          </div>
                        ) : (
@@ -463,7 +501,7 @@ export default function AdminProducts() {
                             <div className="w-12 h-12 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-3">
                                <ImagePlus size={24} />
                             </div>
-                            <p className="text-gray-400 text-xs font-medium">No photo selected for this item</p>
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Select from Gallery</p>
                          </div>
                        )}
                      </div>
