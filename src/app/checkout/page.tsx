@@ -277,7 +277,6 @@ export default function CheckoutPage() {
                           Verify
                         </button>
                       </div>
-                    </div>
 
                     <AnimatePresence>
                       {distance !== null && (
