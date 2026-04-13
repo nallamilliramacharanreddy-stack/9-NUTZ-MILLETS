@@ -369,8 +369,8 @@ export default function CheckoutPage() {
 
                     <button 
                       onClick={placeOrder}
-                      disabled={loading}
-                      className="w-full py-5 bg-brand-green text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all text-xl"
+                      disabled={loading || (distance !== null && distance > 40)}
+                      className="w-full py-5 bg-brand-green text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all text-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? <Loader2 className="animate-spin mx-auto" /> : `Place Order (₹${total})`}
                     </button>

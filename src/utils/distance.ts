@@ -30,8 +30,8 @@ export function calculateDistance(
 }
 
 export const STORE_LOCATION = {
-  lat: 16.942172,
-  lng: 82.079792,
+  lat: 16.937143,
+  lng: 82.076998,
   address: "9 NUTZ MILLETS NEAR YSR STATUE, LN PURAM, GOLLALA MAMIDADA, AP.",
 };
 
