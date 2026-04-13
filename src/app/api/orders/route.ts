@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import DirectOrder from '@/models/Order';
+import Product from '@/models/Product';
 import { rateLimit, securityResponse, logSecurityEvent } from '@/lib/security';
 
 export async function GET(req: Request) {
@@ -85,6 +86,17 @@ export async function POST(req: Request) {
       },
       status: 'pending',
     });
+
+    // ✅ Update Stock Inventory
+    try {
+      const stockUpdates = finalItems.map(item => 
+        Product.findByIdAndUpdate(item.id, { $inc: { stock: -item.quantity } })
+      );
+      await Promise.all(stockUpdates);
+    } catch (stockError) {
+      console.error('CRITICAL: Failed to update stock for order', orderId, stockError);
+      // We don't fail the order if stock update fails, but we log it for manual correction
+    }
 
     // Log Security Event
     await logSecurityEvent({
