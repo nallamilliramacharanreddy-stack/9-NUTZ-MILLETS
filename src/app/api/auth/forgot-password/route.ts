@@ -20,10 +20,11 @@ export async function POST(req: Request) {
     }
 
     const { email } = validation.data;
+    const normalizedEmail = email.toLowerCase();
 
     await connectDB();
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       return NextResponse.json(

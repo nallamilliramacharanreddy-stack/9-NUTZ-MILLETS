@@ -44,14 +44,16 @@ export async function POST(req: Request) {
     await connectDB();
 
     // ✅ 5. Find User
+    console.log(`[AUTH] Login attempt for: ${normalizedEmail}`);
     const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
+      console.log(`[AUTH] Login FAILED: User not found for ${normalizedEmail}`);
       await logSecurityEvent({
         event: "LOGIN_UNKNOWN_USER",
         severity: "WARN",
         ip,
-        metadata: { email },
+        metadata: { email: normalizedEmail },
       });
 
       return securityResponse("Invalid email or password", 401);
@@ -77,6 +79,7 @@ export async function POST(req: Request) {
 
     // ✅ 8. Password Check
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log(`[AUTH] Password match for ${normalizedEmail}: ${isMatch}`);
 
     if (!isMatch) {
       user.loginAttempts = (user.loginAttempts || 0) + 1;

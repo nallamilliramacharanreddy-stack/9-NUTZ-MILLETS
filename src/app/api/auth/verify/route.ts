@@ -8,15 +8,16 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { email, otp, action, type = 'registration' } = body;
+    const normalizedEmail = email?.toLowerCase();
 
-    console.log('📬 AUTH-VERIFY REQUEST:', { email, type, action });
+    console.log('📬 AUTH-VERIFY REQUEST:', { email: normalizedEmail, type, action });
 
     if (!email) {
       return NextResponse.json({ message: 'Email is required' }, { status: 400 });
     }
 
     await connectDB();
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });

@@ -8,6 +8,7 @@ import { logSecurityEvent } from '@/lib/security';
 export async function POST(req: Request) {
   try {
     const { name, email, phone, password } = await req.json();
+    const normalizedEmail = email.toLowerCase();
 
     if (!name || !email || !phone || !password) {
       return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
@@ -19,7 +20,7 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return NextResponse.json({ message: 'User already exists' }, { status: 400 });
     }
