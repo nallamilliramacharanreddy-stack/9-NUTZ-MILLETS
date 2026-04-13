@@ -14,19 +14,22 @@ function OrderTrackingContent() {
   const [status, setStatus] = useState<string>("Pending");
   const [user, setUser] = useState<any>(null);
   const [userOrders, setUserOrders] = useState<any[]>([]);
+  const [trackingInput, setTrackingInput] = useState("");
+  const [currentOrder, setCurrentOrder] = useState<any>(null);
   
   // Track specific order if ID provided
   useEffect(() => {
     if (orderId) {
-       // Mock progression or we could fetch the specific order here
-       setStatus("Pending");
-       
-       // If we want real status:
+       setLoading(true);
        fetch("/api/orders").then(res => res.json()).then(data => {
          const specificOrder = data.find((o: any) => o.orderId === orderId);
          if (specificOrder) {
+           setCurrentOrder(specificOrder);
            setStatus(specificOrder.status.charAt(0).toUpperCase() + specificOrder.status.slice(1));
+         } else {
+           setCurrentOrder(null);
          }
+         setLoading(false);
        });
     }
   }, [orderId]);
@@ -48,10 +51,16 @@ function OrderTrackingContent() {
 
   const steps = [
     { name: "Pending", icon: <Clock size={24} />, description: "Order received" },
-    { name: "Packed", icon: <Package size={24} />, description: "Quality check passed" },
-    { name: "Out for Delivery", icon: <Truck size={24} />, description: "Nearby your location" },
+    { name: "Processing", icon: <Package size={24} />, description: "Quality check passed" },
+    { name: "Shipped", icon: <Truck size={24} />, description: "Nearby your location" },
     { name: "Delivered", icon: <CheckCircle size={24} />, description: "Successfully handed over" },
   ];
+
+  const handleTrackSearch = () => {
+    if (trackingInput.trim()) {
+      window.location.href = `/order-tracking?orderId=${trackingInput.trim()}`;
+    }
+  };
 
   const currentStepIndex = steps.findIndex(s => s.name === status);
 
@@ -62,8 +71,20 @@ function OrderTrackingContent() {
         <h2 className="text-2xl font-black text-brand-green mb-4">No order found</h2>
         <p className="text-gray-500 mb-8 max-w-md">Please enter your order ID or phone number to track your delicious 9 Nutzz order.</p>
         <div className="flex bg-white p-2 rounded-2xl shadow-lg w-full max-w-sm border border-brand-gold/10">
-           <input type="text" placeholder="Enter Order ID (e.g. ORD-123)" className="bg-transparent flex-grow px-4 outline-none" />
-           <button className="px-6 py-3 bg-brand-green text-white font-bold rounded-xl shadow-md">Track</button>
+           <input 
+             type="text" 
+             placeholder="Enter Order ID (e.g. DORD-...)" 
+             className="bg-transparent flex-grow px-4 outline-none" 
+             value={trackingInput}
+             onChange={(e) => setTrackingInput(e.target.value)}
+             onKeyPress={(e) => e.key === 'Enter' && handleTrackSearch()}
+           />
+           <button 
+             onClick={handleTrackSearch}
+             className="px-6 py-3 bg-brand-green text-white font-bold rounded-xl shadow-md"
+           >
+             Track
+           </button>
         </div>
         
         {user && userOrders.length > 0 && (
@@ -112,38 +133,47 @@ function OrderTrackingContent() {
             </div>
           </div>
 
-          {/* Tracking Pipeline */}
-          <div className="relative mt-16 mb-20 px-10">
-            {/* Line */}
-            <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -translate-y-1/2 z-0 hidden md:block" />
-            <div className="absolute top-1/2 left-0 h-1 bg-brand-green -translate-y-1/2 z-0 hidden md:block transition-all duration-1000" 
-                 style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }} />
-            
-            <div className="grid md:grid-cols-4 gap-12 relative z-10">
-              {steps.map((step, idx) => {
-                const isActive = idx <= currentStepIndex;
-                const isCurrent = idx === currentStepIndex;
-                
-                return (
-                  <div key={step.name} className="flex flex-col items-center">
-                    <motion.div 
-                      initial={false}
-                      animate={isCurrent ? { scale: [1, 1.2, 1] } : {}}
-                      transition={{ repeat: Infinity, duration: 2 }}
-                      className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-4 transition-all duration-500
-                        ${isActive ? 'bg-brand-green text-white border-white' : 'bg-white text-gray-300 border-gray-100'}`}
-                    >
-                      {step.icon}
-                    </motion.div>
-                    <div className="mt-4 text-center">
-                      <p className={`font-bold text-sm ${isActive ? 'text-brand-green' : 'text-gray-300'}`}>{step.name}</p>
-                      <p className="text-[10px] text-gray-400 mt-1 uppercase font-semibold leading-relaxed">{step.description}</p>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </div>
+
+          {currentOrder && (
+            <div className="mt-12 mb-12">
+               <h3 className="text-xl font-black text-brand-green mb-6 uppercase tracking-tighter">Ordered Items</h3>
+               <div className="space-y-4">
+                  {currentOrder.items?.map((item: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                       <div className="flex items-center space-x-4">
+                          <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-gray-200 p-1">
+                             <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-brand-green">{item.name}</p>
+                            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Qty: {item.quantity}</p>
+                          </div>
+                       </div>
+                       <p className="font-black text-brand-green">₹{item.price * item.quantity}</p>
+                    </div>
+                  ))}
+               </div>
+               
+               <div className="mt-8 p-6 bg-brand-green/5 rounded-3xl border border-brand-green/10">
+                  <div className="flex justify-between text-sm mb-2">
+                     <span className="text-gray-500 font-medium">Payment Status</span>
+                     <span className={`font-bold uppercase tracking-widest text-[10px] px-2 py-0.5 rounded ${currentOrder.payment?.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {currentOrder.payment?.status}
+                     </span>
+                  </div>
+                  <div className="flex justify-between text-sm mb-2">
+                     <span className="text-gray-500 font-medium">Payment Method</span>
+                     <span className="text-brand-green font-bold uppercase text-[10px] tracking-widest">{currentOrder.payment?.method}</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-4 border-t border-brand-green/10">
+                     <span className="font-black text-brand-green uppercase tracking-tighter">Total Paid</span>
+                     <span className="text-2xl font-black text-brand-green">₹{currentOrder.payment?.totalAmount}</span>
+                  </div>
+               </div>
+            </div>
+          )}
 
           <div className="grid md:grid-cols-2 gap-8 pt-10 border-t border-dashed">
             <div className="flex items-start space-x-4">
