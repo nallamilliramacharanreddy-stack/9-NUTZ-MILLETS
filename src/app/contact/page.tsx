@@ -66,7 +66,7 @@ export default function ContactPage() {
                     Email Address
                   </h3>
                   <p className="text-gray-500 font-medium">
-                    nallamilliramacharanreddy@gmail.com
+                    nallamilli@gmail.com
                   </p>
                 </div>
               </div>

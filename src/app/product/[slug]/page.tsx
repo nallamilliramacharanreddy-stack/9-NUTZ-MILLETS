@@ -483,6 +483,16 @@ export default function ProductDetail() {
                                      Verify
                                    </button>
                                 </div>
+                                {locationError && (
+                                  <motion.p 
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    className="text-[10px] text-red-400 font-bold uppercase tracking-wider mt-2 flex items-center gap-1.5"
+                                  >
+                                    <AlertCircle size={10} />
+                                    <span>{locationError}</span>
+                                  </motion.p>
+                                )}
                               </div>
                             </div>
                           ) : (
