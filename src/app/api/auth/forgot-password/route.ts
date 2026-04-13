@@ -20,18 +20,21 @@ export async function POST(req: Request) {
     }
 
     const { email } = validation.data;
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = email.toLowerCase().trim();
+    console.log(`[AUTH-OTP] Request for: "${email}" -> Normalized: "${normalizedEmail}"`);
 
     await connectDB();
 
     const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
+      console.log(`[AUTH-OTP] FAILED: User "${normalizedEmail}" not found in database.`);
       return NextResponse.json(
         { message: 'If account exists, OTP sent' },
         { status: 200 }
       );
     }
+    console.log(`[AUTH-OTP] SUCCESS: User found. Generating OTP...`);
 
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -45,7 +48,7 @@ export async function POST(req: Request) {
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
+        pass: process.env.EMAIL_PASSWORD?.replace(/\s/g, ''),
       },
     });
 

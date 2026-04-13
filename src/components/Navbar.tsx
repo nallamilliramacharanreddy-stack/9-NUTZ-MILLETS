@@ -87,9 +87,9 @@ export default function Navbar() {
           <motion.div 
             whileHover={{ rotate: 180 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="w-12 h-12 bg-brand-green rounded-[18px] flex items-center justify-center shadow-lg"
+            className="w-10 h-10 md:w-12 md:h-12 bg-brand-green rounded-[14px] md:rounded-[18px] flex items-center justify-center shadow-lg"
           >
-            <span className="text-brand-gold font-black text-2xl tracking-tighter">9</span>
+            <span className="text-brand-gold font-black text-xl md:text-2xl tracking-tighter">9</span>
           </motion.div>
           <div className="flex flex-col">
             <h1 className="text-2xl font-black text-brand-green leading-none tracking-tighter uppercase">Nutzz</h1>

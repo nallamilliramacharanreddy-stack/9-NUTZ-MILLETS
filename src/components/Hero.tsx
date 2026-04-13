@@ -23,7 +23,7 @@ export default function Hero() {
           <span className="inline-block px-4 py-1 bg-brand-gold/10 text-brand-gold font-bold text-xs tracking-widest uppercase rounded-full mb-4">
             Organic & Premium
           </span>
-          <h2 className="text-3xl md:text-6xl font-extrabold text-brand-green leading-tight mb-6 text-center md:text-left">
+          <h2 className="text-2xl min-[380px]:text-3xl md:text-6xl font-extrabold text-brand-green leading-tight mb-6 text-center md:text-left">
             Premium Organic <br />
             <span className="gold-text">Millet Foods</span> for a <br />
             Healthier You.
@@ -91,19 +91,19 @@ export default function Hero() {
           <motion.div 
             animate={{ y: [0, -10, 0] }}
             transition={{ repeat: Infinity, duration: 3 }}
-            className="absolute top-10 -left-6 bg-white p-4 rounded-xl shadow-lg border border-brand-gold/20"
+            className="absolute top-10 left-2 md:-left-6 bg-white p-3 md:p-4 rounded-xl shadow-lg border border-brand-gold/20 z-20"
           >
-            <p className="text-xs font-bold text-brand-green">Best Seller</p>
-            <p className="text-[10px] text-gray-500">Millet Laddu</p>
+            <p className="text-[10px] md:text-xs font-bold text-brand-green">Best Seller</p>
+            <p className="text-[8px] md:text-[10px] text-gray-500">Millet Laddu</p>
           </motion.div>
           
           <motion.div 
             animate={{ y: [0, 10, 0] }}
             transition={{ repeat: Infinity, duration: 4, delay: 0.5 }}
-            className="absolute bottom-20 -right-6 bg-brand-gold p-4 rounded-xl shadow-lg"
+            className="absolute bottom-20 right-2 md:-right-6 bg-brand-gold p-3 md:p-4 rounded-xl shadow-lg z-20"
           >
-            <p className="text-xs font-bold text-brand-green">24/7 Support</p>
-            <p className="text-[10px] text-white">Dedicated Help</p>
+            <p className="text-[10px] md:text-xs font-bold text-brand-green">24/7 Support</p>
+            <p className="text-[8px] md:text-[10px] text-white">Dedicated Help</p>
           </motion.div>
         </motion.div>
       </div>

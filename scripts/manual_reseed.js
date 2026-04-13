@@ -15,8 +15,9 @@ async function run() {
 
     // Schema definition for the script
     const userSchema = new mongoose.Schema({
-      name: String,
-      email: { type: String, unique: true },
+      name: { type: String, required: true },
+      email: { type: String, required: true, unique: true },
+      phone: { type: String, required: true },
       password: { type: String, required: true },
       role: { type: String, default: 'user' },
       isVerified: { type: Boolean, default: false }
@@ -26,9 +27,10 @@ async function run() {
 
     const user = await User.findOneAndUpdate(
       { email: adminEmail },
-      { 
+      {
         name: '9 Nutzz Admin',
         email: adminEmail,
+        phone: '9949131747',
         password: hashedPassword,
         role: 'admin',
         isVerified: true

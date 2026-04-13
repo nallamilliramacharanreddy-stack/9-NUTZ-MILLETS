@@ -65,7 +65,7 @@ export default function ShopPage() {
              />
           </div>
           
-          <div className="flex items-center space-x-2 overflow-x-auto pb-2 no-scrollbar w-full md:w-auto">
+          <div className="flex items-center space-x-2 overflow-x-auto pb-4 no-scrollbar w-full md:w-auto">
             {categories.map((cat) => (
               <button
                 key={cat}
