@@ -9,7 +9,7 @@ async function run() {
     await mongoose.connect(MONGODB_URI);
     console.log('Connected.');
 
-    const adminEmail = '9NUTZMILLETSGMD@gmail.com';
+    const adminEmail = '9nutzmilletsgmd@gmail.com';
     const adminPassword = 'Reddy@3377';
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
 

@@ -38,12 +38,13 @@ export async function POST(req: Request) {
     }
 
     const { email, password } = validation.data;
+    const normalizedEmail = email.toLowerCase();
 
     // ✅ 4. Connect DB
     await connectDB();
 
     // ✅ 5. Find User
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       await logSecurityEvent({
