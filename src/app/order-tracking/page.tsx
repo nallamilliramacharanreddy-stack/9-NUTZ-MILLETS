@@ -56,9 +56,7 @@ function OrderTrackingContent() {
   }, []);
 
   const steps = [
-    { name: "Pending", icon: <Clock size={24} />, description: "Order received" },
-    { name: "Processing", icon: <Package size={24} />, description: "Quality check passed" },
-    { name: "Shipped", icon: <Truck size={24} />, description: "Nearby your location" },
+    { name: "Ordered", icon: <Clock size={24} />, description: "Order received" },
     { name: "Delivered", icon: <CheckCircle size={24} />, description: "Successfully handed over" },
   ];
 
@@ -68,7 +66,7 @@ function OrderTrackingContent() {
     }
   };
 
-  const currentStepIndex = steps.findIndex(s => s.name === status);
+  const currentStepIndex = status === "Delivered" ? 1 : 0;
 
   if (!orderId) {
     return (
