@@ -446,52 +446,52 @@ export default function ProductDetail() {
 
                        {/* Location Step */}
                        <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
-                          {!distance || distance > DELIVERY_RADIUS_KM ? (
-                            <button 
-                              type="button"
-                              onClick={handleGetLocation}
-                              disabled={validatingLocation}
-                              className="w-full py-4 bg-white text-brand-green font-bold rounded-2xl flex items-center justify-center space-x-2"
-                            >
-                              {validatingLocation ? <Loader2 className="animate-spin" size={20} /> : <MapPin size={20} />}
-                              <span>Verify Delivery Location (40km)</span>
-                            </button>
+                          {(!distance || distance > DELIVERY_RADIUS_KM) ? (
+                            <div className="space-y-4">
+                              <button 
+                                type="button"
+                                onClick={handleGetLocation}
+                                disabled={validatingLocation}
+                                className="w-full py-4 bg-white text-brand-green font-bold rounded-2xl flex items-center justify-center space-x-2"
+                              >
+                                {validatingLocation ? <Loader2 className="animate-spin" size={20} /> : <MapPin size={20} />}
+                                <span>Verify Location via GPS</span>
+                              </button>
+
+                              <div className="relative flex items-center py-2">
+                                <div className="flex-grow border-t border-white/20"></div>
+                                <span className="flex-shrink mx-4 text-[10px] font-black uppercase tracking-[0.2em] opacity-40">OR</span>
+                                <div className="flex-grow border-t border-white/20"></div>
+                              </div>
+
+                              <div className="bg-white/10 p-5 rounded-2xl border border-white/10 space-y-3">
+                                <label className="text-[10px] uppercase font-black tracking-widest opacity-60 block">Manually Enter Pincode</label>
+                                <div className="flex gap-2">
+                                   <input 
+                                     type="text" 
+                                     placeholder="Ex: 533341"
+                                     maxLength={6}
+                                     value={manualPincode}
+                                     onChange={(e) => setManualPincode(e.target.value)}
+                                     className="flex-grow bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-brand-gold text-sm font-bold"
+                                   />
+                                   <button 
+                                     type="button"
+                                     onClick={handleManualLocation}
+                                     className="px-6 py-3 bg-brand-gold text-white text-xs font-black rounded-xl uppercase tracking-widest hover:scale-105 transition-transform"
+                                   >
+                                     Verify
+                                   </button>
+                                </div>
+                              </div>
+                            </div>
                           ) : (
-                            <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-emerald-300">
+                            <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-emerald-300 bg-emerald-500/10 p-4 rounded-2xl border border-emerald-500/20">
                                <div className="flex items-center space-x-2">
                                   <CheckCircle2 size={16} />
                                   <span>In Range ({distance} km)</span>
                                </div>
-                               <button type="button" onClick={() => setDistance(null)} className="underline">Change</button>
-                            </div>
-                          )}
-
-                          {locationError && (
-                            <div className="space-y-3">
-                              <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-xs flex items-center space-x-2 italic">
-                               <AlertCircle size={14} />
-                               <span>{locationError}</span>
-                              </div>
-                              <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-3">
-                                 <p className="text-[10px] uppercase font-black tracking-widest opacity-60">Manual Pincode Verification</p>
-                                 <div className="flex gap-2">
-                                    <input 
-                                      type="text" 
-                                      placeholder="Ex: 533341"
-                                      maxLength={6}
-                                      value={manualPincode}
-                                      onChange={(e) => setManualPincode(e.target.value)}
-                                      className="flex-grow bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white outline-none focus:ring-1 focus:ring-brand-gold text-sm"
-                                    />
-                                    <button 
-                                      type="button"
-                                      onClick={handleManualLocation}
-                                      className="px-4 py-2 bg-brand-gold text-white text-xs font-bold rounded-xl"
-                                    >
-                                      Verify
-                                    </button>
-                                 </div>
-                              </div>
+                               <button type="button" onClick={() => {setDistance(null); setManualPincode("");}} className="underline decoration-emerald-300/30 underline-offset-4">Change</button>
                             </div>
                           )}
                        </div>
