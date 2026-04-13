@@ -7,6 +7,7 @@ export interface IDirectOrder {
     phone: string;
     altPhone?: string;
     address: string;
+    pincode: string;
   };
   items: {
     id: string;
@@ -35,6 +36,7 @@ const directOrderSchema = new Schema<IDirectOrder>(
       phone: { type: String, required: true },
       altPhone: { type: String },
       address: { type: String, required: true },
+      pincode: { type: String, required: true },
     },
     items: [
       {

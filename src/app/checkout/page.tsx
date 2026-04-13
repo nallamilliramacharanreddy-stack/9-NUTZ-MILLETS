@@ -21,12 +21,12 @@ export default function CheckoutPage() {
     name: "",
     phone: "",
     address: "",
+    pincode: "",
     lat: 0,
     lng: 0,
   });
   const [distance, setDistance] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [pincode, setPincode] = useState("");
 
   useEffect(() => {
     const items = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -88,7 +88,7 @@ export default function CheckoutPage() {
 
   // Manual pincode location bypass
   const handleManualLocation = () => {
-    if (pincode.startsWith("533") && pincode.length === 6) {
+    if (formData.pincode.startsWith("533") && formData.pincode.length === 6) {
       // Set a mock location within range
       const mockLat = STORE_LOCATION.lat + 0.02;
       const mockLng = STORE_LOCATION.lng + 0.02;
@@ -109,6 +109,7 @@ export default function CheckoutPage() {
         name: formData.name,
         phone: formData.phone,
         address: formData.address,
+        pincode: formData.pincode,
         location: { lat: formData.lat, lng: formData.lng }
       },
       orderItems: cartItems.map(item => ({
@@ -260,18 +261,17 @@ export default function CheckoutPage() {
 
                     <div className="pt-4 border-t border-gray-100">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Or Use Pincode Verification</p>
-                      <div className="flex gap-2">
                         <input 
                           type="text" 
                           placeholder="Ex: 533344"
                           maxLength={6}
-                          value={pincode}
-                          onChange={(e) => setPincode(e.target.value)}
+                          value={formData.pincode}
+                          onChange={(e) => setFormData({...formData, pincode: e.target.value})}
                           className="flex-grow p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-gold text-sm"
                         />
                         <button 
                           onClick={handleManualLocation}
-                          disabled={pincode.length !== 6}
+                          disabled={formData.pincode.length !== 6}
                           className="px-6 py-3 bg-brand-green text-white font-bold rounded-xl text-xs hover:bg-brand-gold transition-colors disabled:opacity-50"
                         >
                           Verify
