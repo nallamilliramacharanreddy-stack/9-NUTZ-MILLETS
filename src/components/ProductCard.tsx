@@ -16,11 +16,13 @@ interface ProductCardProps {
     category: string;
     rating: number;
     minOrderQuantity?: number;
+    stock?: number;
   };
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const addToCart = () => {
+    if (product.stock !== undefined && product.stock <= 0) return;
+    
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
     const existing = cart.find((item: any) => item._id === product._id);
     const moq = product.minOrderQuantity || 1;
@@ -32,6 +34,8 @@ export default function ProductCard({ product }: ProductCardProps) {
     localStorage.setItem("cart", JSON.stringify(cart));
     window.dispatchEvent(new Event("storage")); // Trigger update in Navbar
   };
+
+  const isOutOfStock = product.stock !== undefined && product.stock <= 0;
 
   return (
     <motion.div
@@ -68,9 +72,14 @@ export default function ProductCard({ product }: ProductCardProps) {
            <span className="bg-white/90 backdrop-blur-md text-brand-green text-[9px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest shadow-sm border border-gray-100">
              {product.category}
            </span>
-           {product.minOrderQuantity && product.minOrderQuantity > 1 && (
+           {product.minOrderQuantity && product.minOrderQuantity > 1 && !isOutOfStock && (
              <span className="bg-red-500 text-white text-[9px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest shadow-lg">
                Min Order: {product.minOrderQuantity}
+             </span>
+           )}
+           {isOutOfStock && (
+             <span className="bg-gray-800 text-white text-[9px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest shadow-lg">
+               Out of Stock
              </span>
            )}
         </div>
@@ -105,7 +114,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           
           <button
             onClick={addToCart}
-            className="w-12 h-12 flex items-center justify-center bg-brand-green text-white rounded-[18px] hover:bg-brand-gold hover:shadow-lg hover:shadow-brand-gold/20 transition-all duration-300 active:scale-90"
+            disabled={isOutOfStock}
+            className={`w-12 h-12 flex items-center justify-center rounded-[18px] transition-all duration-300 active:scale-90
+              ${isOutOfStock 
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                : "bg-brand-green text-white hover:bg-brand-gold hover:shadow-lg hover:shadow-brand-gold/20"}`}
           >
             <ShoppingCart size={20} />
           </button>

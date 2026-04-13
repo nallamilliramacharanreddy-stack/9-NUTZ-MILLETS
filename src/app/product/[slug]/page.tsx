@@ -104,6 +104,8 @@ export default function ProductDetail() {
     if (slug) fetchProduct();
   }, [slug]);
 
+  const isOutOfStock = product && product.stock !== undefined && product.stock <= 0;
+
   const codSurcharge = 50;
   const subtotal = product ? product.price * quantity : 0;
   const total = subtotal + (paymentMethod === 'cod' ? codSurcharge : 0);
@@ -265,6 +267,10 @@ export default function ProductDetail() {
                   <Star size={14} fill="currentColor" />
                   <span className="text-sm font-bold ml-1 text-gray-700">{product.rating} (48 Reviews)</span>
                </div>
+               <div className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isOutOfStock ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                  <div className={`w-1.5 h-1.5 rounded-full ${isOutOfStock ? 'bg-red-500' : 'bg-emerald-500 animate-pulse'}`} />
+                  <span>{isOutOfStock ? 'Out of Stock' : 'In Stock'}</span>
+               </div>
             </div>
 
             <h1 className="text-3xl md:text-4xl font-black text-brand-green mb-4 leading-tight text-center md:text-left">{product.name}</h1>
@@ -286,13 +292,21 @@ export default function ProductDetail() {
                
                <div className="flex flex-col sm:flex-row gap-4 w-full">
                   <button 
-                    onClick={() => setShowCheckout(true)}
-                    className="flex-grow py-5 bg-brand-gold text-white font-black rounded-2xl shadow-xl shadow-brand-gold/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center space-x-2 uppercase tracking-widest"
+                    onClick={() => !isOutOfStock && setShowCheckout(true)}
+                    disabled={isOutOfStock}
+                    className={`flex-grow py-5 font-black rounded-2xl shadow-xl transition-all flex items-center justify-center space-x-2 uppercase tracking-widest
+                      ${isOutOfStock 
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none' 
+                        : 'bg-brand-gold text-white shadow-brand-gold/20 hover:scale-[1.02] active:scale-[0.98]'}`}
                   >
-                    <span>Buy Now</span>
+                    <span>{isOutOfStock ? 'Unavailable' : 'Buy Now'}</span>
                   </button>
                   <button 
-                    className="flex-grow py-5 bg-brand-green text-white font-bold rounded-2xl shadow-lg hover:bg-brand-green/90 transition-all flex items-center justify-center space-x-2"
+                    disabled={isOutOfStock}
+                    className={`flex-grow py-5 font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2
+                      ${isOutOfStock 
+                        ? 'bg-gray-50 text-gray-300 cursor-not-allowed shadow-none' 
+                        : 'bg-brand-green text-white hover:bg-brand-green/90'}`}
                   >
                     <ShoppingCart size={20} />
                     <span>Add to Cart</span>
