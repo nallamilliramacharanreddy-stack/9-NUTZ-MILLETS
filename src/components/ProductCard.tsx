@@ -21,6 +21,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const addToCart = () => {
     if (product.stock !== undefined && product.stock <= 0) return;
     
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
