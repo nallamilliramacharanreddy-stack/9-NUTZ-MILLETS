@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, MoreVertical, Edit, Trash2, Box, Info, X, Loader2, CheckCircle2, AlertCircle, Save, PackageX, PackageCheck } from "lucide-react";
+import { Plus, Search, MoreVertical, Edit, Trash2, Box, Info, X, Loader2, CheckCircle2, AlertCircle, Save, PackageX, PackageCheck, ImagePlus, XCircle, RefreshCw, Layers } from "lucide-react";
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<any[]>([]);
@@ -251,15 +251,61 @@ export default function AdminProducts() {
                    />
                 </div>
 
-                <div className="space-y-2">
-                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Image URL</label>
-                   <input 
-                     type="text" 
-                     placeholder="Paste high-quality photo URL"
-                     className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold"
-                     value={formData.images}
-                     onChange={(e) => setFormData({...formData, images: e.target.value})}
-                   />
+                <div className="space-y-4">
+                   <div className="flex items-center justify-between">
+                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Product Photo</label>
+                     {formData.images && (
+                       <button 
+                         type="button" 
+                         onClick={() => setFormData({...formData, images: ""})}
+                         className="flex items-center space-x-1 text-[10px] font-bold text-red-500 uppercase hover:underline"
+                       >
+                         <XCircle size={12} />
+                         <span>Remove Photo</span>
+                       </button>
+                     )}
+                   </div>
+                   
+                   <div className="relative group">
+                     <div className={`w-full h-48 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center overflow-hidden bg-gray-50
+                       ${formData.images ? 'border-brand-green/20' : 'border-gray-200 hover:border-brand-gold/50'}`}>
+                       
+                       {formData.images ? (
+                         <div className="relative w-full h-full">
+                           <img 
+                             src={formData.images} 
+                             alt="Preview" 
+                             className="w-full h-full object-cover"
+                             onError={(e) => {
+                               (e.target as any).src = "https://placehold.co/600x400?text=Invalid+Image+URL";
+                             }}
+                           />
+                           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <p className="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm">Current Preview</p>
+                           </div>
+                         </div>
+                       ) : (
+                         <div className="text-center p-6">
+                            <div className="w-12 h-12 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                               <ImagePlus size={24} />
+                            </div>
+                            <p className="text-gray-400 text-xs font-medium">Add a photo to make this item look delicious</p>
+                         </div>
+                       )}
+                     </div>
+
+                     <div className="mt-3 relative">
+                       <input 
+                         type="text" 
+                         placeholder="Paste high-quality photo URL here..."
+                         className="w-full pl-10 pr-4 py-4 bg-white border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold shadow-sm transition-all"
+                         value={formData.images}
+                         onChange={(e) => setFormData({...formData, images: e.target.value})}
+                       />
+                       <RefreshCw className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+                     </div>
+                     <p className="text-[10px] text-gray-400 mt-2 italic px-2">Tip: Use high-res square images for the best shop experience.</p>
+                   </div>
                 </div>
 
                 <div className="flex items-center space-x-3">
@@ -383,14 +429,56 @@ export default function AdminProducts() {
                    />
                 </div>
 
-                <div className="space-y-2">
-                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Image URL</label>
-                   <input 
-                     type="text" 
-                     className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold"
-                     value={Array.isArray(editingProduct.images) ? editingProduct.images[0] || "" : editingProduct.images}
-                     onChange={(e) => setEditingProduct({...editingProduct, images: e.target.value})}
-                   />
+                <div className="space-y-4">
+                   <div className="flex items-center justify-between">
+                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Update Product Photo</label>
+                     <button 
+                       type="button" 
+                       onClick={() => setEditingProduct({...editingProduct, images: []})}
+                       className="flex items-center space-x-1 text-[10px] font-bold text-red-500 uppercase hover:underline"
+                     >
+                       <XCircle size={12} />
+                       <span>Remove Photo</span>
+                     </button>
+                   </div>
+                   
+                   <div className="relative group">
+                     <div className="w-full h-48 rounded-2xl border-2 border-dashed border-brand-green/20 overflow-hidden bg-gray-50 flex items-center justify-center">
+                       {Array.isArray(editingProduct.images) && editingProduct.images[0] ? (
+                         <div className="relative w-full h-full">
+                           <img 
+                             src={editingProduct.images[0]} 
+                             alt="Edit Preview" 
+                             className="w-full h-full object-cover"
+                             onError={(e) => {
+                               (e.target as any).src = "https://placehold.co/600x400?text=Invalid+Image+URL";
+                             }}
+                           />
+                           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <p className="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm">Live Preview</p>
+                           </div>
+                         </div>
+                       ) : (
+                         <div className="text-center p-6">
+                            <div className="w-12 h-12 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                               <ImagePlus size={24} />
+                            </div>
+                            <p className="text-gray-400 text-xs font-medium">No photo selected for this item</p>
+                         </div>
+                       )}
+                     </div>
+
+                     <div className="mt-3 relative">
+                       <input 
+                         type="text" 
+                         placeholder="New Photo URL..."
+                         className="w-full pl-10 pr-4 py-4 bg-white border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold shadow-sm transition-all"
+                         value={Array.isArray(editingProduct.images) ? editingProduct.images[0] || "" : (editingProduct.images || "")}
+                         onChange={(e) => setEditingProduct({...editingProduct, images: [e.target.value]})}
+                       />
+                       <RefreshCw className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+                     </div>
+                   </div>
                 </div>
 
                 <div className="flex items-center space-x-3">
