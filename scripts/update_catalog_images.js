@@ -1,6 +1,10 @@
-const mongoose = require('mongoose');
+require('dotenv').config({ path: '.env.local' });
+const MONGODB_URI = process.env.MONGODB_URI;
 
-const MONGODB_URI = "mongodb+srv://nallamilliramacharanreddy_db_user:Reddy12345@cluster0.hmnikk3.mongodb.net/9nutzz?retryWrites=true&w=majority";
+if (!MONGODB_URI) {
+  console.error("❌ ERROR: MONGODB_URI is not defined in .env.local or environment variables.");
+  process.exit(1);
+}
 
 async function updateCatalog() {
   try {
