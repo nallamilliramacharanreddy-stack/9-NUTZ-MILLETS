@@ -19,7 +19,8 @@ export default function CartPage() {
   const updateQuantity = (id: string, delta: number) => {
     const newCart = cartItems.map((item) => {
       if (item._id === id) {
-        const newQty = Math.max(1, item.quantity + delta);
+        const moq = item.minOrderQuantity || 1;
+        const newQty = Math.max(moq, item.quantity + delta);
         return { ...item, quantity: newQty };
       }
       return item;
@@ -88,16 +89,20 @@ export default function CartPage() {
                     </div>
                     
                     <div className="flex-grow">
-                      <h3 className="font-bold text-brand-green md:text-lg">{item.name}</h3>
-                      <p className="text-brand-gold font-bold text-sm">₹{item.price}</p>
+                       <p className="text-brand-gold font-bold text-sm">₹{item.price}</p>
+                       {item.minOrderQuantity && item.minOrderQuantity > 1 && (
+                         <p className="text-[9px] text-red-500 font-black uppercase tracking-widest mt-1">
+                           Min Order: {item.minOrderQuantity}
+                         </p>
+                       )}
                     </div>
 
                     <div className="flex items-center space-x-3 bg-gray-50 p-2 rounded-xl border border-gray-100">
                       <button 
                         onClick={() => updateQuantity(item._id, -1)}
                         className="p-1 hover:bg-white rounded-lg transition-colors text-brand-green disabled:opacity-30"
-                        disabled={item.quantity <= 1}
-                      >
+                         disabled={item.quantity <= (item.minOrderQuantity || 1)}
+                       >
                         <Minus size={16} />
                       </button>
                       <span className="font-bold text-brand-green w-4 text-center text-sm">{item.quantity}</span>

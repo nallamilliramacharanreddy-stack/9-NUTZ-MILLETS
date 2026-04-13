@@ -77,71 +77,105 @@ export default function Navbar() {
   return (
     <nav
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 py-3 md:px-8",
-        scrolled || isOpen ? "bg-white/90 backdrop-blur-md shadow-sm py-2" : "bg-transparent py-4"
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-4 py-4 md:px-12",
+        scrolled || isOpen ? "bg-white/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.05)] py-3" : "bg-transparent py-6"
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-2 group">
-          <div className="w-10 h-10 bg-brand-green rounded-full flex items-center justify-center group-hover:rotate-12 transition-transform">
-            <span className="text-brand-gold font-bold text-xl">9</span>
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-brand-green leading-none">Nutzz</h1>
-            <p className="text-[10px] uppercase tracking-widest text-brand-gold font-semibold">Millets</p>
+        <Link href="/" className="flex items-center space-x-3 group relative">
+          <motion.div 
+            whileHover={{ rotate: 180 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="w-12 h-12 bg-brand-green rounded-[18px] flex items-center justify-center shadow-lg"
+          >
+            <span className="text-brand-gold font-black text-2xl tracking-tighter">9</span>
+          </motion.div>
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-black text-brand-green leading-none tracking-tighter uppercase">Nutzz</h1>
+            <p className="text-[10px] uppercase font-black tracking-[0.3em] text-brand-gold leading-none mt-1">Millets</p>
           </div>
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center space-x-8">
+        <div className="hidden lg:flex items-center space-x-10">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.href}
-              className="text-sm font-medium text-brand-green hover:text-brand-gold transition-colors"
+              className={cn(
+                "text-[11px] uppercase font-black tracking-[0.2em] transition-all hover:text-brand-gold relative group",
+                pathname === link.href ? "text-brand-gold" : "text-brand-green/70"
+              )}
             >
               {link.name}
+              <span className={cn(
+                "absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-gold transition-all duration-300 group-hover:w-full",
+                pathname === link.href ? "w-full" : "w-0"
+              )} />
             </Link>
           ))}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center space-x-3 md:space-x-5">
-          <button className="p-2 text-brand-green hover:bg-brand-gold/10 rounded-full transition-colors hidden sm:block">
-            <Search size={20} />
-          </button>
+        <div className="flex items-center space-x-4">
+          <div className="hidden sm:flex items-center bg-gray-100/50 rounded-2xl p-1 border border-gray-200/50">
+             <button className="p-2.5 text-brand-green hover:bg-white hover:shadow-sm rounded-xl transition-all">
+                <Search size={18} />
+             </button>
+          </div>
 
-          <Link href="/cart" className="relative p-2 text-brand-green hover:bg-brand-gold/10 rounded-full transition-colors">
-            <ShoppingCart size={20} />
-            {cartCount > 0 && (
-              <span className="absolute top-0 right-0 bg-brand-gold text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                {cartCount}
-              </span>
-            )}
+          <Link href="/cart" className="relative p-3 text-brand-green bg-white shadow-sm border border-gray-100 rounded-2xl hover:scale-110 active:scale-95 transition-all">
+            <ShoppingCart size={18} />
+            <AnimatePresence>
+               {cartCount > 0 && (
+                 <motion.span 
+                   initial={{ scale: 0 }}
+                   animate={{ scale: 1 }}
+                   exit={{ scale: 0 }}
+                   className="absolute -top-2 -right-2 bg-brand-gold text-white text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-md ring-2 ring-brand-gold/10"
+                 >
+                   {cartCount}
+                 </motion.span>
+               )}
+            </AnimatePresence>
           </Link>
 
           {user ? (
-            <div className="hidden md:flex items-center space-x-4">
-              <Link href={user.role === 'admin' ? "/admin" : "/profile/settings"} className="text-xs font-bold text-brand-green bg-brand-gold/10 px-4 py-2 rounded-full hover:bg-brand-gold/20 transition-all">
-                {user.name.split(' ')[0]}
+            <div className="hidden lg:flex items-center space-x-6 pl-4 border-l border-gray-200">
+              <Link href={user.role === 'admin' ? "/admin" : "/profile/settings"} className="flex items-center space-x-3 group">
+                 <div className="w-10 h-10 bg-brand-green/5 rounded-2xl flex items-center justify-center text-brand-green border border-brand-green/10 group-hover:bg-brand-green group-hover:text-white transition-all">
+                    <User size={18} />
+                 </div>
+                 <div className="flex flex-col">
+                    <span className="text-[10px] uppercase font-black tracking-widest text-brand-gold">Account</span>
+                    <span className="text-xs font-bold text-brand-green">{user.name.split(' ')[0]}</span>
+                 </div>
               </Link>
-              <button onClick={handleLogout} className="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors uppercase tracking-widest">
+              <button 
+                onClick={handleLogout} 
+                className="text-[9px] font-black text-gray-400 hover:text-red-500 transition-colors uppercase tracking-[0.2em] border border-gray-100 px-3 py-1.5 rounded-lg hover:bg-red-50"
+              >
                 Logout
               </button>
             </div>
           ) : (
-            <Link href="/login" className="hidden md:flex items-center space-x-2 text-sm font-bold text-brand-green hover:text-brand-gold transition-colors">
-              <User size={18} />
-              <span>Login</span>
+            <Link 
+              href="/login" 
+              className="hidden lg:flex items-center space-x-2 px-6 py-3 bg-brand-green text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-brand-green/20 hover:shadow-brand-green/40 hover:translate-y-[-2px] transition-all"
+            >
+              <User size={14} />
+              <span>Join Us</span>
             </Link>
           )}
 
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 text-brand-green hover:bg-brand-gold/10 rounded-full transition-colors"
+            className="lg:hidden p-3 bg-white shadow-sm border border-gray-100 rounded-2xl text-brand-green transition-all"
           >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
+            <motion.div animate={{ rotate: isOpen ? 90 : 0 }}>
+               {isOpen ? <X size={20} /> : <Menu size={20} />}
+            </motion.div>
           </button>
         </div>
       </div>

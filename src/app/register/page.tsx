@@ -73,7 +73,7 @@ export default function RegisterPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/auth/verify-otp", {
+      const res = await fetch("/api/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email, otp }),
@@ -102,7 +102,7 @@ export default function RegisterPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/auth/verify-otp", {
+      const res = await fetch("/api/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email, action: "resend" }),
@@ -192,12 +192,12 @@ export default function RegisterPage() {
 
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input 
-                    type="password" required placeholder="Create Password"
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold focus:bg-white transition-all text-sm font-bold text-brand-green"
-                    value={formData.password}
-                    onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  />
+                    <input 
+                      type="password" required minLength={8} placeholder="Create Password"
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold focus:bg-white transition-all text-sm font-bold text-brand-green"
+                      value={formData.password}
+                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    />
                 </div>
 
                 <button 

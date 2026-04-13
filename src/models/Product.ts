@@ -12,6 +12,7 @@ export interface IProduct {
   featured: boolean;
   rating: number;
   numReviews: number;
+  minOrderQuantity: number;
 }
 
 const productSchema = new Schema<IProduct>(
@@ -31,6 +32,7 @@ const productSchema = new Schema<IProduct>(
     featured: { type: Boolean, default: false },
     rating: { type: Number, default: 0 },
     numReviews: { type: Number, default: 0 },
+    minOrderQuantity: { type: Number, default: 1 },
   },
   { timestamps: true }
 );

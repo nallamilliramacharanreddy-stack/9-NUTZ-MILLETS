@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
-import { securityResponse } from '@/lib/security';
+import { securityResponse, logSecurityEvent } from '@/lib/security';
 
 // GET: Fetch all products with optional filtering
 export async function GET(req: NextRequest) {
@@ -21,7 +21,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(products);
   } catch (error: any) {
     console.error('Products List Error:', error.message);
-    return securityResponse('Failed to fetch products', 500);
+    const message = error.message?.includes("connect") || error.message?.includes("timeout")
+      ? "Database connection failed. Please check Atlas IP Whitelist."
+      : "Failed to fetch products";
+    return securityResponse(message, 500);
   }
 }
 
@@ -47,6 +50,15 @@ export async function POST(req: NextRequest) {
       images: body.images || ["https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop"]
     });
 
+    // Log Security Event
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
+    await logSecurityEvent({
+      event: 'PRODUCT_CREATED',
+      severity: 'INFO',
+      ip,
+      metadata: { productId: product._id, name: product.name }
+    });
+
     return NextResponse.json({
       message: 'Product created successfully',
       product
@@ -57,6 +69,9 @@ export async function POST(req: NextRequest) {
     if (error.code === 11000) {
       return NextResponse.json({ message: 'A product with this name or slug already exists' }, { status: 400 });
     }
-    return securityResponse('Failed to create product', 500);
+    const message = error.message?.includes("connect") || error.message?.includes("timeout")
+      ? "Database connection failed. Please check Atlas IP Whitelist."
+      : "Failed to create product";
+    return securityResponse(message, 500);
   }
 }

@@ -9,8 +9,15 @@ import Footer from "@/components/Footer";
 function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email") || "";
+  const [email, setEmail] = useState("");
   
+  useEffect(() => {
+    const emailParam = searchParams.get("email");
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, [searchParams]);
+
   const [step, setStep] = useState(1); // 1: OTP, 2: New Password
   const [otp, setOtp] = useState(searchParams.get("otp") || "");
   const [password, setPassword] = useState("");
@@ -77,6 +84,11 @@ function ResetPasswordForm() {
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email) {
+      setError("Email address is missing. Please restart the forgot password process.");
+      return;
+    }
+
     if (otp.length !== 6) {
       setError("Please enter a valid 6-digit OTP");
       return;
@@ -91,10 +103,10 @@ function ResetPasswordForm() {
     setError(null);
 
     try {
-      const res = await fetch("/api/auth/verify-otp", {
+      const res = await fetch("/api/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ otp }),
+        body: JSON.stringify({ email, otp, type: 'reset' }),
       });
 
       const data = await res.json();
@@ -152,16 +164,16 @@ function ResetPasswordForm() {
       className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-brand-gold/5"
     >
       <div className="text-center mb-10">
-        <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors duration-500 ${step === 1 ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
            {step === 1 ? <Hash size={32} /> : <ShieldCheck size={32} />}
         </div>
         <h1 className="text-2xl font-bold text-brand-green">
-          {step === 1 ? "Verify OTP" : "Set New Password"}
+          {step === 1 ? "Verify OTP" : "Secure Your Account"}
         </h1>
-        <p className="text-gray-400 text-sm mt-2">
+        <p className="text-gray-400 text-sm mt-2 px-4">
           {step === 1 
-            ? `Enter the 6-digit code sent to ${email.substring(0, 3)}...${email.split('@')[1]}` 
-            : "Verification successful! Enter your new secure password."
+            ? `We've sent a 6-digit code to your email. Enter it below to continue.` 
+            : "Verification successful! Please create a strong new password for your account."
           }
         </p>
       </div>
@@ -201,12 +213,13 @@ function ResetPasswordForm() {
               </div>
             </>
           ) : (
-            <>
+            <div className="space-y-4">
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input 
                   type={showPassword ? "text" : "password"} 
                   required
+                  autoFocus
                   placeholder="New Password"
                   className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold focus:bg-white transition-all shadow-sm"
                   value={password}
@@ -226,12 +239,33 @@ function ResetPasswordForm() {
                   type={showPassword ? "text" : "password"} 
                   required
                   placeholder="Confirm New Password"
-                  className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold focus:bg-white transition-all shadow-sm"
+                  className={`w-full pl-12 pr-12 py-4 bg-gray-50 border rounded-2xl outline-none focus:ring-2 focus:bg-white transition-all shadow-sm ${
+                    confirmPassword && password !== confirmPassword 
+                      ? "border-red-300 focus:ring-red-500" 
+                      : confirmPassword && password === confirmPassword
+                      ? "border-emerald-300 focus:ring-emerald-500"
+                      : "border-gray-100 focus:ring-brand-gold"
+                  }`}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
+                {confirmPassword && (
+                   <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                      {password === confirmPassword ? (
+                        <CheckCircle2 size={18} className="text-emerald-500" />
+                      ) : (
+                        <AlertCircle size={18} className="text-red-500" />
+                      )}
+                   </div>
+                )}
               </div>
-            </>
+              
+              {confirmPassword && password !== confirmPassword && (
+                <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-4">
+                  Passwords do not match
+                </p>
+              )}
+            </div>
           )}
         </div>
 

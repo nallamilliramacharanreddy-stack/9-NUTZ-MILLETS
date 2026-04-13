@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import DirectOrder from '@/models/Order';
-import { rateLimit, securityResponse } from '@/lib/security';
+import { rateLimit, securityResponse, logSecurityEvent } from '@/lib/security';
 
 export async function GET(req: Request) {
   try {
@@ -9,7 +9,10 @@ export async function GET(req: Request) {
     const orders = await DirectOrder.find({}).sort({ createdAt: -1 }).lean();
     return NextResponse.json(orders);
   } catch (error: any) {
-    return securityResponse('Failed to fetch orders', 500);
+    const message = error.message?.includes("connect") || error.message?.includes("timeout")
+      ? "Database connection failed. Please check Atlas IP Whitelist."
+      : "Failed to fetch orders";
+    return securityResponse(message, 500);
   }
 }
 
@@ -83,6 +86,14 @@ export async function POST(req: Request) {
       status: 'pending',
     });
 
+    // Log Security Event
+    await logSecurityEvent({
+      event: 'ORDER_PLACED',
+      severity: 'INFO',
+      ip,
+      metadata: { orderId: order.orderId, total: order.payment.totalAmount }
+    });
+
     return NextResponse.json(
       {
         message: 'Order placed successfully',
@@ -103,9 +114,13 @@ export async function POST(req: Request) {
       );
     }
 
+    const message = error.message?.includes("connect") || error.message?.includes("timeout")
+      ? "Database connection failed. Please check Atlas IP Whitelist."
+      : "Failed to save order to database. Please try again.";
+
     return NextResponse.json(
       {
-        message: 'Failed to save order to database. Please try again.',
+        message,
         details: error.message,
       },
       { status: 500 }

@@ -33,7 +33,8 @@ export async function POST(req: Request) {
     // ✅ 3. Validate Input
     const validation = schemas.login.safeParse(body);
     if (!validation.success) {
-      return securityResponse("Invalid input provided", 400);
+      console.error("Login Validation Error:", validation.error.format());
+      return securityResponse("Invalid input provided. Check email format and password length (min 8).", 400);
     }
 
     const { email, password } = validation.data;
@@ -179,7 +180,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        message: "Server error",
+        message: error.message?.includes("connect") || error.message?.includes("timeout")
+          ? "Database connection failed. Please check your network or MongoDB Atlas settings (IP Whitelist)."
+          : "Server error",
         error:
           process.env.NODE_ENV === "development"
             ? error.message
@@ -189,3 +192,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

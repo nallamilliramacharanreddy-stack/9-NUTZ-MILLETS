@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import nodemailer from 'nodemailer';
+import { logSecurityEvent } from '@/lib/security';
 
 export async function POST(req: Request) {
   try {
@@ -10,6 +11,10 @@ export async function POST(req: Request) {
 
     if (!name || !email || !phone || !password) {
       return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json({ message: 'Password must be at least 8 characters long' }, { status: 400 });
     }
 
     await connectDB();
@@ -30,9 +35,18 @@ export async function POST(req: Request) {
       email,
       phone,
       password: hashedPassword,
-      isVerified: true, // Auto-verify new users as requested
+      isVerified: false, 
       verificationOTP: otp,
       verificationOTPExpire: otpExpire,
+    });
+
+    // Log Security Event
+    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    await logSecurityEvent({
+      event: 'USER_REGISTRATION_INITIATED',
+      severity: 'INFO',
+      ip,
+      metadata: { email, name }
     });
 
     // Send OTP Email
@@ -78,6 +92,10 @@ export async function POST(req: Request) {
     }, { status: 201 });
 
   } catch (error: any) {
-    return NextResponse.json({ message: 'Internal Server Error', error: error.message }, { status: 500 });
+    console.error('Registration Error:', error.message);
+    const message = error.message?.includes("connect") || error.message?.includes("timeout")
+      ? "Database connection failed. Please check Atlas IP Whitelist."
+      : "Internal Server Error";
+    return NextResponse.json({ message, error: error.message }, { status: 500 });
   }
 }

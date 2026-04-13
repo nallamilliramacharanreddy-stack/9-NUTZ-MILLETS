@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
-import { rateLimit, schemas, securityResponse } from '@/lib/security';
+import { rateLimit, schemas, securityResponse, logSecurityEvent } from '@/lib/security';
 
 export async function POST(req: Request) {
   try {
@@ -44,6 +44,15 @@ export async function POST(req: Request) {
     user.resetPasswordExpire = undefined;
     
     await user.save();
+
+    // 5. Log Security Event
+    await logSecurityEvent({
+      event: 'PASSWORD_RESET_SUCCESS',
+      severity: 'INFO',
+      ip,
+      userId: user._id.toString(),
+      metadata: { email: user.email }
+    });
 
     return NextResponse.json({ message: 'Password updated successfully' }, { status: 200 });
 
