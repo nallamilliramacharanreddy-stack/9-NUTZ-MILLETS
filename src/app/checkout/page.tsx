@@ -70,7 +70,7 @@ export default function CheckoutPage() {
           longitude
         );
         
-        setFormData({ ...formData, lat: latitude, lng: longitude });
+        setFormData({ ...formData, lat: latitude, lng: longitude, pincode: "533001" });
         setDistance(dist);
         setCalculating(false);
         

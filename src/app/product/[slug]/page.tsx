@@ -61,6 +61,7 @@ export default function ProductDetail() {
         );
         
         setDistance(dist);
+        setManualPincode("533001"); // Set default regional pincode for GPS
         setValidatingLocation(false);
         
         if (dist > DELIVERY_RADIUS_KM) {
@@ -125,6 +126,7 @@ export default function ProductDetail() {
           phone: formData.phone,
           altPhone: formData.altPhone,
           address: formData.address,
+          pincode: manualPincode || "533001",
         },
         orderItems: [{
           id: product._id,
