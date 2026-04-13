@@ -105,7 +105,7 @@ export default function Footer() {
               <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-all">
                 <Mail size={18} />
               </div>
-              <p className="text-emerald-100/70 text-[13px] font-bold break-all">nallamilli@gmail.com</p>
+              <p className="text-emerald-100/70 text-[13px] font-bold break-all">nallamilliramacharanreddy@gmail.com</p>
             </div>
           </div>
         </div>
