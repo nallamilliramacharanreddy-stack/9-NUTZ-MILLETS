@@ -61,18 +61,24 @@ export default function ProductDetail() {
         );
         
         setDistance(dist);
-        setManualPincode("533001"); // Set default regional pincode for GPS
         setValidatingLocation(false);
         
         if (dist > DELIVERY_RADIUS_KM) {
-          setLocationError(`Sorry, we only deliver within ${DELIVERY_RADIUS_KM} km.`);
+          setLocationError(`Notice: You are ${dist}km away. We currently deliver within ${DELIVERY_RADIUS_KM}km of our store.`);
+        } else {
+          setLocationError(null);
         }
       },
       (err) => {
-        setLocationError(`Location error: ${err.message}. Please move to an open area or try manual verification.`);
+        let msg = "Could not get your location.";
+        if (err.code === 1) msg = "Location permission denied. Please allow location access or use manual pincode.";
+        else if (err.code === 2) msg = "Location unavailable. Please check your GPS signal.";
+        else if (err.code === 3) msg = "Location request timed out. Please try again or use manual pincode.";
+        
+        setLocationError(msg);
         setValidatingLocation(false);
       },
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 10000 }
     );
   };
 
