@@ -42,78 +42,77 @@ export async function PATCH(
     }
     
     await order.save();
+    console.log(`✅ Order ${id} status updated to ${status} in database.`);
 
-    // ✅ Send Delivery "Thank You" Email (ONLY for delivered status AND if email exists)
+    // ✅ Send Delivery "Thank You" Email (STAY SECURE BUT DON'T BLOCK UI)
     if (status === 'delivered' && order.customer?.email) {
-      try {
-        const transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD?.replace(/\s/g, ''),
-          },
-        });
+      // Create transporter once
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD?.replace(/\s/g, ''),
+        },
+      });
 
-        const itemsHtml = order.items.map((i: any) => `
-          <div style="padding: 10px; border-bottom: 1px solid #eee;">
-            <strong>${i.name}</strong> - Qty: ${i.quantity} (₹${i.price})
-          </div>
-        `).join("");
+      const itemsHtml = order.items.map((i: any) => `
+        <div style="padding: 10px; border-bottom: 1px solid #eee;">
+          <strong>${i.name}</strong> - Qty: ${i.quantity} (₹${i.price})
+        </div>
+      `).join("");
 
-        const mailOptions = {
-          from: `"9 Nutzz Millets" <${process.env.EMAIL_USER}>`,
-          to: order.customer.email,
-          subject: "🎉 Your 9 Nutzz treats have been delivered!",
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-              <div style="background: #1a5d1a; padding: 30px; border-radius: 15px 15px 0 0; text-align: center; color: white;">
-                <h1 style="margin: 0;">Delivered Successfully!</h1>
-                <p style="font-size: 18px; opacity: 0.9;">Order #${order.orderId}</p>
-              </div>
+      const mailOptions = {
+        from: `"9 Nutzz Millets" <${process.env.EMAIL_USER}>`,
+        to: order.customer.email,
+        subject: "🎉 Your 9 Nutzz treats have been delivered!",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+            <div style="background: #1a5d1a; padding: 30px; border-radius: 15px 15px 0 0; text-align: center; color: white;">
+              <h1 style="margin: 0; font-size: 28px;">Delivered Successfully!</h1>
+              <p style="font-size: 18px; opacity: 0.9; margin-top: 10px;">Order #${order.orderId}</p>
+            </div>
+            
+            <div style="padding: 30px; border: 1px solid #1a5d1a; border-top: none; border-radius: 0 0 15px 15px; background: #fff;">
+              <p>Hi <strong>${order.customer.name}</strong>,</p>
+              <p>Great news! Your 9 Nutzz Millets order has been successfully delivered. We hope you enjoy these healthy, handcrafted millet treats.</p>
               
-              <div style="padding: 30px; border: 1px solid #1a5d1a; border-top: none; border-radius: 0 0 15px 15px; background: #fff;">
-                <p style="font-size: 16px;">Hi <strong>${order.customer.name}</strong>,</p>
-                <p style="font-size: 16px; line-height: 1.6;">
-                  Great news! Your 9 Nutzz Millets order has been successfully delivered. We hope you enjoy these healthy, handcrafted millet treats.
-                </p>
-                
-                <div style="background: #f9f9f9; padding: 20px; border-radius: 10px; margin: 25px 0;">
-                  <h3 style="margin-top: 0; color: #c0911b;">Order Summary</h3>
-                  ${itemsHtml}
-                  <div style="padding-top: 15px; text-align: right; font-weight: bold; font-size: 18px; color: #1a5d1a;">
-                    Total Amount: ₹${order.payment.totalAmount}
-                  </div>
+              <div style="background: #f9f9f9; padding: 20px; border-radius: 10px; margin: 25px 0; border-left: 4px solid #c0911b;">
+                <h3 style="margin-top: 0; color: #c0911b; text-transform: uppercase; font-size: 14px; letter-spacing: 1px;">Order Summary</h3>
+                ${itemsHtml}
+                <div style="padding-top: 15px; text-align: right; font-weight: bold; font-size: 18px; color: #1a5d1a;">
+                  Total Amount: ₹${order.payment.totalAmount}
                 </div>
+              </div>
 
-                <div style="text-align: center; margin-top: 30px; padding: 20px; border-top: 1px dashed #ddd;">
-                  <h3 style="color: #1a5d1a;">Thank You for Choosing 9 Nutzz!</h3>
-                  <p style="font-size: 14px; color: #666;">
-                    We'd love to hear your feedback. Feel free to reply to this email or visit our shop again!
-                  </p>
-                  <a href="${process.env.NEXT_PUBLIC_URL || 'https://9-nutzz-millets.vercel.app'}/shop" 
-                     style="background: #c0911b; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; margin-top: 10px;">
-                    Shop More Millets
-                  </a>
-                </div>
+              <div style="text-align: center; margin-top: 30px; padding: 20px; border-top: 1px dashed #ddd;">
+                <h3 style="color: #1a5d1a; margin-top: 0;">Thank You for Choosing 9 Nutzz!</h3>
+                <p style="font-size: 14px; color: #666;">We'd love to hear your feedback. Feel free to reply to this email or visit our shop again!</p>
+                <a href="${process.env.NEXT_PUBLIC_URL || 'https://9-nutzz-millets.vercel.app'}/shop" 
+                   style="background: #c0911b; color: white; padding: 14px 30px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block; margin-top: 15px; box-shadow: 0 4px 10px rgba(192, 145, 27, 0.3);">
+                  Shop More Millets
+                </a>
+              </div>
 
-                <div style="margin-top: 30px; text-align: center; color: #999; font-size: 11px;">
-                  <p>9 NUTZ MILLETS NEAR YSR STATUE, GOLLALA MAMIDADA, LN PURAM, AP.</p>
-                  <p>© ${new Date().getFullYear()} 9 Nutzz Millets. All rights reserved.</p>
-                </div>
+              <div style="margin-top: 40px; text-align: center; color: #999; font-size: 11px; border-top: 1px solid #eee; pt-20;">
+                <p style="margin-bottom: 5px;">9 NUTZ MILLETS NEAR YSR STATUE, GOLLALA MAMIDADA, LN PURAM, AP.</p>
+                <p>© ${new Date().getFullYear()} 9 Nutzz Millets. All rights reserved.</p>
               </div>
             </div>
-          `,
-        };
+          </div>
+        `,
+      };
 
-        await transporter.sendMail(mailOptions);
-        console.log('✅ Delivery email sent successfully to:', order.customer.email);
-      } catch (emailError: any) {
-        console.error('Delivery Email failed but status was updated:', emailError.message);
-      }
+      // 🔥 FIRE AND FORGET (Log the result for Vercel logs)
+      transporter.sendMail(mailOptions)
+        .then(info => console.log('📧 Email sent successfully:', info.messageId))
+        .catch(err => console.error('❌ Email failed delivery:', err.message));
     }
 
     return NextResponse.json({ 
-      message: `Order status updated to ${status} ${status === 'delivered' ? 'and confirmation email sent' : ''}`, 
+      message: `Status updated to ${status}. Email notification sent if applicable.`, 
       order 
     }, { status: 200 });
 

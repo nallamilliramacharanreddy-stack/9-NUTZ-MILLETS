@@ -59,53 +59,41 @@ export async function POST(req: Request) {
       return securityResponse("Invalid email or password", 401);
     }
 
-    // ✅ 6. AUTO VERIFY ALL USERS (IMPORTANT FIX)
+    // ✅ 6. Logic Updates
+    let needsSave = false;
+    
+    // Auto verify all users
     if (!user.isVerified) {
       user.isVerified = true;
-      await user.save();
+      needsSave = true;
     }
 
-    // ✅ 7. Lock Check
-    if (user.lockUntil && user.lockUntil > new Date()) {
-      const remaining = Math.ceil(
-        (user.lockUntil.getTime() - Date.now()) / 60000
-      );
-
-      return securityResponse(
-        `Account locked. Try again in ${remaining} min.`,
-        403
-      );
-    }
-
-    // ✅ 8. Password Check
+    // Reset attempts on successful password match (password check is below)
     const isMatch = await bcrypt.compare(password, user.password);
     console.log(`[AUTH] Password match for ${normalizedEmail}: ${isMatch}`);
 
     if (!isMatch) {
       user.loginAttempts = (user.loginAttempts || 0) + 1;
-
       if (user.loginAttempts >= 3) {
         user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
         user.loginAttempts = 0;
       }
-
       await user.save();
-
+      
       await logSecurityEvent({
         event: "LOGIN_FAILURE",
         severity: "WARN",
         ip,
         userId: user._id.toString(),
       });
-
       return securityResponse("Invalid email or password", 401);
     }
 
-    // ✅ 9. Reset Attempts
+    // Successful Login Path
     user.loginAttempts = 0;
     user.lockUntil = undefined;
 
-    // ✅ 10. Generate Tokens
+    // Generate Tokens
     const accessToken = signAccessToken({
       id: user._id.toString(),
       name: user.name,
@@ -118,19 +106,17 @@ export async function POST(req: Request) {
     });
 
     const hashedRT = hashToken(refreshToken);
-
     user.refreshTokens = user.refreshTokens || [];
-
     if (user.refreshTokens.length >= 5) {
       user.refreshTokens.shift();
     }
-
     user.refreshTokens.push({
       token: hashedRT,
       deviceId: req.headers.get("user-agent") || "unknown",
       createdAt: new Date(),
     });
 
+    // Final consolidated save
     await user.save();
 
     await logSecurityEvent({
