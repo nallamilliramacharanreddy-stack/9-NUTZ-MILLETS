@@ -43,8 +43,8 @@ export async function PATCH(
     
     await order.save();
 
-    // ✅ Send Delivery "Thank You" Email (ONLY for delivered status)
-    if (status === 'delivered') {
+    // ✅ Send Delivery "Thank You" Email (ONLY for delivered status AND if email exists)
+    if (status === 'delivered' && order.customer?.email) {
       try {
         const transporter = nodemailer.createTransport({
           service: 'gmail',

@@ -35,7 +35,7 @@ const directOrderSchema = new Schema<IDirectOrder>(
     customer: {
       name: { type: String, required: true },
       phone: { type: String, required: true },
-      email: { type: String, required: true },
+      email: { type: String },
       altPhone: { type: String },
       address: { type: String, required: true },
       pincode: { type: String, required: true },
