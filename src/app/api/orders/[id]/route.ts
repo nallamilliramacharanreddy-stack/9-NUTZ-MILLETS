@@ -117,8 +117,12 @@ export async function PATCH(
     }, { status: 200 });
 
   } catch (error: any) {
-    console.error('Order Update API Error:', error.message);
-    return securityResponse('Internal Server Error', 500);
+    console.error('CRITICAL: Order Update API Error:', error.message);
+    return NextResponse.json({ 
+      message: 'Internal Server Error', 
+      error: error.message,
+      status: 'error' 
+    }, { status: 500 });
   }
 }
 

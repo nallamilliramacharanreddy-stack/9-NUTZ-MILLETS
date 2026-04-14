@@ -38,10 +38,11 @@ export default function AdminOrders() {
         alert("✅ Delivered Successfully!");
         setOrders(orders.map(o => o._id === id ? { ...o, status: "delivered", payment: { ...o.payment, status: "completed" } } : o));
       } else {
-        alert("❌ Failed to update order status.");
+        const errData = await res.json().catch(() => ({ message: "Unknown error" }));
+        alert(`❌ Failed: ${errData.message || res.statusText}`);
       }
     } catch (err) {
-      alert("❌ Error communicating with server.");
+      alert("❌ Error communicating with server. Please check your connection.");
     }
   };
 
