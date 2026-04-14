@@ -41,7 +41,7 @@ export default function AdminOrders() {
       
       if (res.ok) {
         setOrders(orders.map(o => o._id === id ? { ...o, status: "delivered", payment: { ...o.payment, status: "completed" } } : o));
-        alert("✅ Order Marked as Delivered Successfully!");
+        alert(`✅ Success: ${data.message}`);
       } else {
         alert(`❌ Failed: ${data.message || "Unknown error"}`);
       }
