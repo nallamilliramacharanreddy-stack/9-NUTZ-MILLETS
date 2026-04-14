@@ -291,8 +291,7 @@ export default function ProductDetail() {
                   <span className="font-black text-brand-green text-lg w-8 text-center">{quantity}</span>
                   <button onClick={() => setQuantity(quantity + 1)} className="p-2 text-brand-green hover:bg-white rounded-lg transition-colors"><Plus size={18} /></button>
                </div>
-               
-               <div className="flex flex-col sm:flex-row gap-4 w-full">
+                            <div className="flex flex-col sm:flex-row gap-4 w-full">
                   <button 
                     onClick={() => !isOutOfStock && setShowCheckout(true)}
                     disabled={isOutOfStock}
@@ -302,6 +301,19 @@ export default function ProductDetail() {
                   </button>
                   <button 
                     disabled={isOutOfStock}
+                    onClick={() => {
+                      if (isOutOfStock) return;
+                      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+                      const existingIndex = cart.findIndex((item: any) => item._id === product._id);
+                      if (existingIndex > -1) {
+                        cart[existingIndex].quantity += quantity;
+                      } else {
+                        cart.push({ ...product, quantity });
+                      }
+                      localStorage.setItem("cart", JSON.stringify(cart));
+                      window.dispatchEvent(new Event("storage"));
+                      alert("Product added to cart!");
+                    }}
                     className="flex-grow py-4 px-6 font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2 text-sm bg-brand-green text-white disabled:bg-gray-50 disabled:text-gray-300 disabled:shadow-none hover:bg-brand-green/90"
                   >
                     <ShoppingCart size={18} />
