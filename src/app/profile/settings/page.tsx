@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Loader2, CheckCircle2, AlertCircle, Settings, User, Phone, Mail, ShieldCheck, UserCircle } from "lucide-react";
+import { Lock, Loader2, CheckCircle2, AlertCircle, Settings, User, Phone, Mail, ShieldCheck, UserCircle, Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -18,6 +18,9 @@ export default function ProfileSettings() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user") || "null");
@@ -249,13 +252,20 @@ export default function ProfileSettings() {
                           <div className="relative">
                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                             <input 
-                              type="password" 
+                              type={showCurrentPassword ? "text" : "password"} 
                               required
                               placeholder="Enter current password"
-                              className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold transition-all"
+                              className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold transition-all"
                               value={passwordData.currentPassword}
                               onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
                             />
+                            <button
+                              type="button"
+                              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-green transition-colors"
+                            >
+                              {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
                           </div>
                         </div>
 
@@ -265,13 +275,20 @@ export default function ProfileSettings() {
                             <div className="relative">
                               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                               <input 
-                                type="password" 
+                                type={showNewPassword ? "text" : "password"} 
                                 required
                                 placeholder="Min. 8 chars"
-                                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold transition-all"
+                                className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold transition-all"
                                 value={passwordData.newPassword}
                                 onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
                               />
+                              <button
+                                type="button"
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-green transition-colors"
+                              >
+                                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                              </button>
                             </div>
                           </div>
                           <div className="space-y-2">
@@ -279,13 +296,20 @@ export default function ProfileSettings() {
                             <div className="relative">
                               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                               <input 
-                                type="password" 
+                                type={showConfirmPassword ? "text" : "password"} 
                                 required
                                 placeholder="Repeat new password"
-                                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold transition-all"
+                                className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold transition-all"
                                 value={passwordData.confirmPassword}
                                 onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
                               />
+                              <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-green transition-colors"
+                              >
+                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                              </button>
                             </div>
                           </div>
                         </div>

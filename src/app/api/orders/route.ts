@@ -141,15 +141,20 @@ export async function POST(req: Request) {
       console.error('Admin Email Notification failed but order was saved:', emailError);
     }
 
-    // ✅ Update Stock Inventory
+    // ✅ Update Stock Inventory (Standardized for all products)
     try {
-      const stockUpdates = finalItems.map(item => 
-        Product.findByIdAndUpdate(item.id, { $inc: { stock: -item.quantity } })
-      );
-      await Promise.all(stockUpdates);
-    } catch (stockError) {
-      console.error('CRITICAL: Failed to update stock for order', orderId, stockError);
-      // We don't fail the order if stock update fails, but we log it for manual correction
+      const stockUpdates = finalItems.map(item => {
+        // Use findOneAndUpdate with the item.id (which is product._id)
+        return Product.findOneAndUpdate(
+          { _id: item.id }, 
+          { $inc: { stock: -Math.abs(item.quantity) } }, // Ensure we always decrease
+          { new: true }
+        );
+      });
+      const updatedProducts = await Promise.all(stockUpdates);
+      console.log(`✅ Stock updated for ${updatedProducts.length} items`);
+    } catch (stockError: any) {
+      console.error('CRITICAL: Failed to update stock for order', order.orderId, stockError.message);
     }
 
     // Log Security Event

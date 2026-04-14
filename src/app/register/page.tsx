@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, User, Phone, Loader2, ArrowRight, AlertCircle, CheckCircle2, ShieldCheck, RefreshCw } from "lucide-react";
+import { Mail, Lock, User, Phone, Loader2, ArrowRight, AlertCircle, CheckCircle2, ShieldCheck, RefreshCw, Eye, EyeOff } from "lucide-react";
 import Footer from "@/components/Footer";
 
 export default function RegisterPage() {
@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // OTP State
   const [step, setStep] = useState(1); // 1: Registration Form, 2: OTP Verification
@@ -193,11 +194,21 @@ export default function RegisterPage() {
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input 
-                      type="password" required minLength={8} placeholder="Create Password"
-                      className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold focus:bg-white transition-all text-sm font-bold text-brand-green"
+                      type={showPassword ? "text" : "password"}
+                      required 
+                      minLength={8} 
+                      placeholder="Create Password"
+                      className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold focus:bg-white transition-all text-sm font-bold text-brand-green"
                       value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-green transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                 </div>
 
                 <button 

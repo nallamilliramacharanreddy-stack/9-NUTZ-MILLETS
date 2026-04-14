@@ -11,15 +11,38 @@ import {
   ArrowRight,
   AlertCircle,
   CheckCircle2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import Footer from "@/components/Footer";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [user, setUser] = useState<any>(null);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user") || "null");
+    if (userData) {
+      setUser(userData);
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      localStorage.removeItem("user");
+      setUser(null);
+      window.dispatchEvent(new Event("storage"));
+      router.refresh();
+    } catch (err) {
+      setError("Logout failed. Please try again.");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,14 +112,38 @@ export default function LoginPage() {
             </Link>
 
             <h1 className="text-2xl font-bold text-brand-green">
-              Welcome Back!
+              {user ? `Hi, ${user.name.split(' ')[0]}!` : "Welcome Back!"}
             </h1>
             <p className="text-gray-400 text-sm mt-2">
-              Sign in to your healthy millet account
+              {user ? "You are already signed in." : "Sign in to your healthy millet account"}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {user ? (
+            <div className="space-y-6">
+              <div className="bg-brand-cream/30 p-6 rounded-2xl border border-brand-gold/10 text-center">
+                <p className="text-sm text-brand-green font-medium mb-4">
+                  Manage your orders or switch to a different account.
+                </p>
+                <div className="flex flex-col gap-3">
+                  <Link 
+                    href={user.role === 'admin' ? "/admin" : "/shop"}
+                    className="w-full py-4 bg-brand-green text-white font-bold rounded-2xl shadow-lg hover:translate-y-[-2px] transition-all flex items-center justify-center space-x-2"
+                  >
+                    <span>Go to {user.role === 'admin' ? "Admin Panel" : "Shop"}</span>
+                    <ArrowRight size={18} />
+                  </Link>
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full py-4 border-2 border-red-100 text-red-500 font-bold rounded-2xl hover:bg-red-50 transition-all"
+                  >
+                    Log Out from Account
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
             <div className="relative">
               <Mail
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -123,10 +170,10 @@ export default function LoginPage() {
                 size={18}
               />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 placeholder="Password"
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold focus:bg-white transition-all shadow-sm"
+                className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-gold focus:bg-white transition-all shadow-sm"
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({
@@ -135,6 +182,13 @@ export default function LoginPage() {
                   })
                 }
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-green transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
             {/* ✅ FIXED LINK (removed size={14}) */}
@@ -164,6 +218,7 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+          )}
 
           <AnimatePresence>
             {error && (

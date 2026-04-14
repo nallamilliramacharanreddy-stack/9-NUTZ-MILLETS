@@ -28,7 +28,7 @@ const productSchema = new Schema<IProduct>(
       required: true,
       enum: ['cookies', 'laddus', 'snacks', 'grains', 'flours', 'flakes', 'noodles-pasta', 'ready-to-mix', 'others'],
     },
-    stock: { type: Number, required: true, default: 0 },
+    stock: { type: Number, required: true, default: 100 },
     featured: { type: Boolean, default: false },
     rating: { type: Number, default: 0 },
     numReviews: { type: Number, default: 0 },

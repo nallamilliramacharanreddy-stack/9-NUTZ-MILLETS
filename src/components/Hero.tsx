@@ -13,22 +13,23 @@ export default function Hero() {
         <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-brand-gold/10 blur-[100px] rounded-full" />
       </div>
 
-      <div className="container mx-auto px-4 md:px-8 relative z-10 grid lg:grid-cols-2 gap-12 items-center">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 relative z-10 grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
         {/* Text Content */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
+          className="text-center lg:text-left"
         >
-          <span className="inline-block px-4 py-1 bg-brand-gold/10 text-brand-gold font-bold text-xs tracking-widest uppercase rounded-full mb-4">
+          <span className="inline-block px-4 py-1.5 bg-brand-gold/10 text-brand-gold font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase rounded-full mb-6">
             Organic & Premium
           </span>
-          <h2 className="text-2xl min-[380px]:text-3xl md:text-6xl font-extrabold text-brand-green leading-tight mb-6 text-center md:text-left">
-            Premium Organic <br />
-            <span className="gold-text">Millet Foods</span> for a <br />
-            Healthier You.
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-brand-green leading-[1.1] mb-6 tracking-tighter">
+            Premium Organic <br className="hidden sm:block" />
+            <span className="gold-text">Millet Foods</span> <br className="hidden sm:block" />
+            for a Healthier You.
           </h2>
-          <p className="text-base md:text-lg text-gray-600 mb-8 max-w-lg mx-auto md:mx-0 text-center md:text-left">
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed">
             Discover the goodness of our carefully crafted millet cookies, laddus, and snacks. 
             Wholesome, nutritious, and delicious. Experience the ancient Superfood reimagined.
           </p>

@@ -245,12 +245,12 @@ export default function ProductDetail() {
             animate={{ opacity: 1, x: 0 }}
             className="space-y-4"
           >
-             <div className="aspect-square bg-brand-cream/30 rounded-3xl overflow-hidden flex items-center justify-center p-12 border border-brand-gold/5 shadow-inner relative">
+             <div className="aspect-square bg-brand-cream/30 rounded-3xl overflow-hidden flex items-center justify-center p-6 sm:p-12 border border-brand-gold/5 shadow-inner relative">
                 {product.images?.[0] ? (
                    <img src={product.images[0]} alt={product.name} className="w-full h-full object-contain hover:scale-105 transition-transform duration-500" />
                 ) : (
                   <div className="text-center">
-                    <span className="text-6xl font-black text-brand-green/20 uppercase tracking-tighter opacity-50 rotate-[-10deg] block">
+                    <span className="text-4xl sm:text-6xl font-black text-brand-green/20 uppercase tracking-tighter opacity-50 rotate-[-10deg] block">
                        {product.name}
                     </span>
                   </div>
@@ -263,54 +263,48 @@ export default function ProductDetail() {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <div className="flex items-center justify-center md:justify-start space-x-2 mb-4">
-               <span className="px-3 py-1 bg-brand-gold/10 text-brand-gold text-xs font-bold uppercase tracking-widest rounded-full">{product.category}</span>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-6">
+               <span className="px-3 py-1 bg-brand-gold/10 text-brand-gold text-[10px] sm:text-xs font-bold uppercase tracking-widest rounded-full">{product.category}</span>
                <div className="flex items-center text-amber-400">
-                  <Star size={14} fill="currentColor" />
-                  <span className="text-sm font-bold ml-1 text-gray-700">{product.rating} (48 Reviews)</span>
+                  <Star size={12} fill="currentColor" />
+                  <span className="text-xs sm:text-sm font-bold ml-1 text-gray-700">{product.rating}</span>
                </div>
-               <div className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isOutOfStock ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600'}`}>
+               <div className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${isOutOfStock ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600'}`}>
                   <div className={`w-1.5 h-1.5 rounded-full ${isOutOfStock ? 'bg-red-500' : 'bg-emerald-500 animate-pulse'}`} />
                   <span>{isOutOfStock ? 'Out of Stock' : 'In Stock'}</span>
                </div>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-black text-brand-green mb-4 leading-tight text-center md:text-left">{product.name}</h1>
-            <p className="text-gray-500 mb-8 leading-relaxed text-center md:text-left">{product.description}</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-brand-green mb-4 leading-tight text-center md:text-left">{product.name}</h1>
+            <p className="text-sm sm:text-base text-gray-500 mb-8 leading-relaxed text-center md:text-left">{product.description}</p>
             
             <div className="flex items-center justify-center md:justify-start gap-4 mb-10">
-               <span className="text-4xl font-black text-brand-green">₹{product.price}</span>
+               <span className="text-3xl sm:text-4xl font-black text-brand-green">₹{product.price}</span>
                {product.discountPrice && (
-                 <span className="text-xl text-gray-400 line-through">₹{product.discountPrice}</span>
+                 <span className="text-lg sm:text-xl text-gray-400 line-through">₹{product.discountPrice}</span>
                )}
             </div>
 
-            <div className="flex flex-col space-y-4 mb-10">
-               <div className="flex items-center justify-center md:justify-start space-x-4 bg-gray-50 px-4 py-2 rounded-2xl border border-gray-100 w-full sm:w-fit mx-auto md:mx-0">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 text-brand-green hover:bg-white rounded-lg transition-colors"><Minus size={20} /></button>
-                  <span className="font-black text-brand-green text-xl w-8 text-center">{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} className="p-2 text-brand-green hover:bg-white rounded-lg transition-colors"><Plus size={20} /></button>
+            <div className="flex flex-col space-y-6 mb-10">
+               <div className="flex items-center justify-center md:justify-start space-x-4 bg-gray-50 px-4 py-3 rounded-2xl border border-gray-100 w-full sm:w-fit mx-auto md:mx-0">
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 text-brand-green hover:bg-white rounded-lg transition-colors"><Minus size={18} /></button>
+                  <span className="font-black text-brand-green text-lg w-8 text-center">{quantity}</span>
+                  <button onClick={() => setQuantity(quantity + 1)} className="p-2 text-brand-green hover:bg-white rounded-lg transition-colors"><Plus size={18} /></button>
                </div>
                
                <div className="flex flex-col sm:flex-row gap-4 w-full">
                   <button 
                     onClick={() => !isOutOfStock && setShowCheckout(true)}
                     disabled={isOutOfStock}
-                    className={`flex-grow py-5 font-black rounded-2xl shadow-xl transition-all flex items-center justify-center space-x-2 uppercase tracking-widest
-                      ${isOutOfStock 
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none' 
-                        : 'bg-brand-gold text-white shadow-brand-gold/20 hover:scale-[1.02] active:scale-[0.98]'}`}
+                    className="flex-grow py-4 px-6 font-black rounded-2xl shadow-xl transition-all flex items-center justify-center space-x-2 uppercase tracking-widest text-sm bg-brand-gold text-white disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <span>{isOutOfStock ? 'Unavailable' : 'Buy Now'}</span>
                   </button>
                   <button 
                     disabled={isOutOfStock}
-                    className={`flex-grow py-5 font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2
-                      ${isOutOfStock 
-                        ? 'bg-gray-50 text-gray-300 cursor-not-allowed shadow-none' 
-                        : 'bg-brand-green text-white hover:bg-brand-green/90'}`}
+                    className="flex-grow py-4 px-6 font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2 text-sm bg-brand-green text-white disabled:bg-gray-50 disabled:text-gray-300 disabled:shadow-none hover:bg-brand-green/90"
                   >
-                    <ShoppingCart size={20} />
+                    <ShoppingCart size={18} />
                     <span>Add to Cart</span>
                   </button>
                </div>

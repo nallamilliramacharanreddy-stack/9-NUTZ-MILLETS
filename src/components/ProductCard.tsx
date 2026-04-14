@@ -97,7 +97,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <Link href={`/product/${product.slug}`}>
-          <h3 className="text-xl font-black text-brand-green mb-3 line-clamp-1 group-hover:text-brand-gold transition-colors tracking-tighter uppercase">
+          <h3 className="text-lg sm:text-xl font-black text-brand-green mb-3 line-clamp-1 group-hover:text-brand-gold transition-colors tracking-tighter uppercase">
             {product.name}
           </h3>
         </Link>

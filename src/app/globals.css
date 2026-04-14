@@ -68,3 +68,23 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* Mobile Alignment Utilities */
+@layer utilities {
+  .mobile-touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+  
+  .responsive-container {
+    @apply px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto;
+  }
+  
+  .adaptive-text-size {
+    font-size: clamp(0.875rem, 0.8rem + 0.375vw, 1.125rem);
+  }
+}
+
+/* Custom transitions for smoother mobile interaction */
+.smooth-mobile-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

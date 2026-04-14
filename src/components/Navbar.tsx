@@ -77,23 +77,23 @@ export default function Navbar() {
   return (
     <nav
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-4 py-4 md:px-12",
-        scrolled || isOpen ? "bg-white/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.05)] py-3" : "bg-transparent py-6"
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-4 py-4 md:px-8 lg:px-12",
+        scrolled || isOpen ? "bg-white/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.05)] py-3" : "bg-transparent py-4 md:py-6"
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-3 group relative">
+        <Link href="/" className="flex items-center space-x-2 md:space-x-3 group relative">
           <motion.div 
             whileHover={{ rotate: 180 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="w-10 h-10 md:w-12 md:h-12 bg-brand-green rounded-[14px] md:rounded-[18px] flex items-center justify-center shadow-lg"
+            className="w-9 h-9 md:w-11 md:h-11 bg-brand-green rounded-[12px] md:rounded-[16px] flex items-center justify-center shadow-lg flex-shrink-0"
           >
-            <span className="text-brand-gold font-black text-xl md:text-2xl tracking-tighter">9</span>
+            <span className="text-brand-gold font-black text-lg md:text-xl tracking-tighter">9</span>
           </motion.div>
           <div className="flex flex-col">
-            <h1 className="text-2xl font-black text-brand-green leading-none tracking-tighter uppercase">Nutzz</h1>
-            <p className="text-[10px] uppercase font-black tracking-[0.3em] text-brand-gold leading-none mt-1">Millets</p>
+            <h1 className="text-xl md:text-2xl font-black text-brand-green leading-none tracking-tighter uppercase whitespace-nowrap">Nutzz</h1>
+            <p className="text-[10px] uppercase font-black tracking-[0.2em] md:tracking-[0.3em] text-brand-gold leading-none mt-1">Millets</p>
           </div>
         </Link>
 
@@ -222,9 +222,10 @@ export default function Navbar() {
                     </Link>
                     <button
                       onClick={() => { handleLogout(); setIsOpen(false); }}
-                      className="w-full py-3 border border-red-100 text-red-500 font-bold rounded-2xl"
+                      className="w-full py-4 bg-red-50 text-red-600 font-black uppercase tracking-widest text-[10px] rounded-2xl border border-red-100 shadow-sm flex items-center justify-center space-x-2 active:scale-95 transition-all"
                     >
-                      Logout
+                      <X size={14} />
+                      <span>Log Out Session</span>
                     </button>
                   </>
                 ) : (
