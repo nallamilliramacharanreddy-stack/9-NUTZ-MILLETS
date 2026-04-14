@@ -205,7 +205,7 @@ export default function CheckoutPage() {
                         type="text" 
                         value={formData.name}
                         onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        className="w-full p-4 bg-gray-50 border rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none"
+                        className="w-full p-4 bg-gray-50 border rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none text-black placeholder-gray-500"
                         placeholder="John Doe"
                       />
                     </div>
@@ -215,7 +215,7 @@ export default function CheckoutPage() {
                         type="tel" 
                         value={formData.phone}
                         onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                        className="w-full p-4 bg-gray-50 border rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none"
+                        className="w-full p-4 bg-gray-50 border rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none text-black placeholder-gray-500"
                         placeholder="+91 9949131747"
                       />
                     </div>
@@ -225,7 +225,7 @@ export default function CheckoutPage() {
                         type="email" 
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
-                        className="w-full p-4 bg-gray-50 border rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none"
+                        className="w-full p-4 bg-gray-50 border rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none text-black placeholder-gray-500"
                         placeholder="john@example.com"
                       />
                     </div>
@@ -290,7 +290,7 @@ export default function CheckoutPage() {
                           maxLength={6}
                           value={formData.pincode}
                           onChange={(e) => setFormData({...formData, pincode: e.target.value})}
-                          className="flex-grow p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-gold text-sm"
+                          className="flex-grow p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-gold text-sm text-black placeholder-gray-500"
                         />
                         <button 
                           onClick={handleManualLocation}
@@ -317,7 +317,7 @@ export default function CheckoutPage() {
                                 <div className="mt-4">
                                   <label className="text-xs font-bold uppercase mb-2 block">Delivery Address Details</label>
                                   <textarea 
-                                    className="w-full p-3 bg-white border border-emerald-200 rounded-xl outline-none"
+                                    className="w-full p-3 bg-white border border-emerald-200 rounded-xl outline-none text-black placeholder-gray-500"
                                     placeholder="House No, Landmark, Area..."
                                     rows={3}
                                     value={formData.address}

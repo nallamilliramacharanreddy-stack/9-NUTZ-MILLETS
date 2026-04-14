@@ -142,6 +142,7 @@ export default function ProductDetail() {
         customer: {
           name: formData.fullName,
           phone: formData.phone,
+          email: formData.email,
           altPhone: formData.altPhone,
           address: formData.address,
           pincode: manualPincode || "533001",
@@ -405,7 +406,7 @@ export default function ProductDetail() {
                             placeholder="Full Name" 
                             value={formData.fullName}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none transition-all"
+                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none transition-all text-black placeholder-gray-500"
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -416,7 +417,7 @@ export default function ProductDetail() {
                             placeholder="Phone Number" 
                             value={formData.phone}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none transition-all"
+                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none transition-all text-black placeholder-gray-500"
                           />
                         </div>
                         <div className="relative">
@@ -427,7 +428,7 @@ export default function ProductDetail() {
                             placeholder="Email Address" 
                             value={formData.email}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none transition-all"
+                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none transition-all text-black placeholder-gray-500"
                           />
                         </div>
                         <div className="grid grid-cols-1 gap-4">
@@ -437,7 +438,7 @@ export default function ProductDetail() {
                             placeholder="Alt Phone (Optional)" 
                             value={formData.altPhone}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none transition-all"
+                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none transition-all text-black placeholder-gray-500"
                           />
                         </div>
                         <textarea 
@@ -447,7 +448,7 @@ export default function ProductDetail() {
                           value={formData.address}
                           onChange={handleInputChange}
                           rows={3}
-                          className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none transition-all resize-none"
+                          className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none transition-all resize-none text-black placeholder-gray-500"
                         />
                       </div>
                     </div>

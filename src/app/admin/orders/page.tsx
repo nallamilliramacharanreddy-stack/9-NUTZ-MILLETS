@@ -10,6 +10,7 @@ export default function AdminOrders() {
   const [search, setSearch] = useState("");
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [premiumThankYou, setPremiumThankYou] = useState(true);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -35,7 +36,8 @@ export default function AdminOrders() {
       const res = await fetch(`/api/orders/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "delivered" })
+        credentials: "include",
+        body: JSON.stringify({ status: "delivered", premiumThankYou })
       });
       const data = await res.json();
       
@@ -58,7 +60,10 @@ export default function AdminOrders() {
     }
 
     try {
-      const res = await fetch(`/api/orders/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/orders/${id}`, { 
+        method: "DELETE",
+        credentials: "include"
+      });
       if (res.ok) {
         setOrders(orders.filter((o) => o._id !== id));
         alert("✅ Order deleted successfully.");
@@ -133,8 +138,9 @@ export default function AdminOrders() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <button className="p-2 bg-white border border-gray-200 rounded-xl text-gray-500 hover:text-brand-green transition-colors">
-            <Filter size={18} />
+          <button className="p-2 flex items-center gap-2 bg-white border border-gray-200 rounded-xl text-gray-500 hover:text-brand-green transition-colors" onClick={() => setPremiumThankYou(!premiumThankYou)}>
+            {premiumThankYou ? <CheckCircle size={18} className="text-brand-gold" /> : <div className="w-4 h-4 rounded-full border-2 border-gray-300"></div>}
+            <span className="text-xs font-bold whitespace-nowrap">Premium Email</span>
           </button>
         </div>
       </div>
