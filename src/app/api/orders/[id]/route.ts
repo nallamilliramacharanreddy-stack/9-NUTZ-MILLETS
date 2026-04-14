@@ -11,6 +11,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await params since Next.js 16 requires it for app-router dynamic routes
+    const { id } = await params;
+
     // 🔍 [DEBUG] Logging headers and cookies as requested
     const cookieStore = await cookies();
     const allHeaders = Object.fromEntries(req.headers.entries());
@@ -28,7 +31,7 @@ export async function PATCH(
 
     const decoded = token ? verifyAccessToken(token) : null;
     if (decoded) {
-      console.log(`[AUTH-DEBUG] Decoded User:`, JSON.user ? JSON.stringify(decoded) : 'Valid Admin Payload');
+      console.log(`[AUTH-DEBUG] Decoded User:`, decoded.email || 'Valid Admin Payload');
     }
 
     if (!decoded) {
