@@ -4,25 +4,32 @@ import DirectOrder from '@/models/Order';
 import { verifyAccessToken } from '@/lib/jwt';
 import { securityResponse } from '@/lib/security';
 import nodemailer from 'nodemailer';
+import { cookies } from 'next/headers';
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Await params since Next.js 16 requires it for app-router dynamic routes
-    const { id } = await params;
-    
-    // Extract token from cookie or Authorization header
+    // 🔍 [DEBUG] Logging headers and cookies as requested
+    const cookieStore = await cookies();
+    const allHeaders = Object.fromEntries(req.headers.entries());
+    const tokenCookie = cookieStore.get('accessToken');
     const authHeader = req.headers.get('authorization');
-    const tokenCookie = req.cookies.get('accessToken');
     
+    console.log(`[AUTH-DEBUG] Headers:`, JSON.stringify(allHeaders, null, 2));
+    console.log(`[AUTH-DEBUG] accessToken Cookie Exists: ${!!tokenCookie}`);
+    console.log(`[AUTH-DEBUG] Authorization Header Exists: ${!!authHeader}`);
+
     let token = tokenCookie?.value;
     if (!token && authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.substring(7);
     }
 
     const decoded = token ? verifyAccessToken(token) : null;
+    if (decoded) {
+      console.log(`[AUTH-DEBUG] Decoded User:`, JSON.user ? JSON.stringify(decoded) : 'Valid Admin Payload');
+    }
 
     if (!decoded) {
       console.warn(`[AUTH] Failed: ${token ? 'Invalid/Expired Token' : 'Missing Token'}`);

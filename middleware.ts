@@ -40,12 +40,15 @@ export async function middleware(request: NextRequest) {
   // Enforce strict origin check for state-changing requests
   if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
     const origin = headers.get('origin');
-    const referer = headers.get('referer');
     const host = headers.get('host');
     
+    // [DEBUG-MIDDLEWARE] Log origin for 403 investigation
+    console.log(`[CSRF-DEBUG] Method: ${method}, Path: ${pathname}, Origin: ${origin}, Host: ${host}`);
+
     // In production, ensure origin matches host
     if (process.env.NODE_ENV === 'production') {
       if (!origin || !origin.includes(host || '')) {
+         console.warn(`[CSRF] Blocked: Origin ${origin} does not match Host ${host}`);
          return new NextResponse(
            JSON.stringify({ message: 'CSRF Protection: Invalid Origin' }),
            { status: 403, headers: { 'Content-Type': 'application/json' } }
@@ -55,10 +58,13 @@ export async function middleware(request: NextRequest) {
   }
 
   // 3. PROTECTED ROUTES (RBAC)
-  const isAdminRoute = pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
+  // catching /api/orders as well to ensure it uses common auth logic
+  const isAdminRoute = pathname.startsWith('/admin') || pathname.startsWith('/api/admin') || pathname.startsWith('/api/orders');
   
-  if (isAdminRoute) {
-    const token = request.cookies.get('accessToken')?.value;
+  if (isAdminRoute && method !== 'POST') { // Allow guest order POST
+    const token = request.cookies.get('accessToken')?.value || headers.get('authorization')?.split(' ')[1];
+    
+    console.log(`[AUTH-DEBUG-MIDDLEWARE] Path: ${pathname}, TokenFound: ${!!token}`);
 
     if (!token) {
       if (pathname.startsWith('/api/')) {
