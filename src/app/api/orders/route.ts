@@ -99,7 +99,7 @@ export async function POST(req: Request) {
 
       const adminMailOptions = {
         from: `"9 Nutzz Millets Order System" <${process.env.EMAIL_USER}>`,
-        to: process.env.EMAIL_USER, // Admin's email
+        to: "9NUTZMILLETSGMD@gmail.com, nallamilliramacharanreddy@gmail.com", // Admin notification emails
         subject: `🔔 NEW ORDER PLACED: ${order.orderId}`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 2px solid #1a5d1a; border-radius: 12px;">
