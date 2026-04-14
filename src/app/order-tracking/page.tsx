@@ -23,6 +23,11 @@ function OrderTrackingContent() {
     if (orderId) {
        setLoading(true);
        fetch("/api/orders", { credentials: "include" }).then(res => res.json()).then(data => {
+         if (!Array.isArray(data)) {
+           console.error("Orders API returned non-array data:", data);
+           setLoading(false);
+           return;
+         }
          const q = orderId.toLowerCase();
          const matches = data.filter((o: any) => 
             o.orderId.toLowerCase() === q ||
@@ -57,8 +62,12 @@ function OrderTrackingContent() {
       fetch("/api/orders", { credentials: "include" })
         .then(res => res.json())
         .then(data => {
-             const userHistory = data.filter((o: any) => o.customer?.name === userData.name || o.customer?.phone === userData.phone);
-             setUserOrders(userHistory);
+             if (Array.isArray(data)) {
+               const userHistory = data.filter((o: any) => o.customer?.name === userData.name || o.customer?.phone === userData.phone);
+               setUserOrders(userHistory);
+             } else {
+               console.error("User history fetch returned non-array:", data);
+             }
         })
         .catch(err => console.error(err));
     }
