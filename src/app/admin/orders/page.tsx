@@ -107,7 +107,8 @@ export default function AdminOrders() {
   const filteredOrders = orders.filter(o =>
     o.orderId.toLowerCase().includes(search.toLowerCase()) ||
     o.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
-    o.customer?.phone?.includes(search)
+    o.customer?.phone?.includes(search) ||
+    o.items?.some((item: any) => item.name.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -132,7 +133,7 @@ export default function AdminOrders() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
-              placeholder="Search by ID or Phone"
+              placeholder="Search by ID, Phone, or Item"
               className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-gold text-sm shadow-sm"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

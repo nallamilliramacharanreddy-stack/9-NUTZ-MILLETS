@@ -23,12 +23,20 @@ function OrderTrackingContent() {
     if (orderId) {
        setLoading(true);
        fetch("/api/orders").then(res => res.json()).then(data => {
-         const specificOrder = data.find((o: any) => o.orderId === orderId);
-         if (specificOrder) {
-           setCurrentOrder(specificOrder);
-           // Normalize status: pending, processing, shipped, delivered, cancelled
-           const s = specificOrder.status || "pending";
+         const q = orderId.toLowerCase();
+         const matches = data.filter((o: any) => 
+            o.orderId.toLowerCase() === q ||
+            o.customer?.phone?.includes(q) ||
+            o.items?.some((item: any) => item.name.toLowerCase().includes(q))
+         );
+
+         if (matches.length === 1) {
+           setCurrentOrder(matches[0]);
+           const s = matches[0].status || "pending";
            setStatus(s.charAt(0).toUpperCase() + s.slice(1));
+         } else if (matches.length > 1) {
+           setCurrentOrder(null);
+           setUserOrders(matches);
          } else {
            setCurrentOrder(null);
          }
@@ -44,7 +52,7 @@ function OrderTrackingContent() {
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user") || "null");
     setUser(userData);
-    if (userData) {
+    if (userData && !orderId) {
       fetch("/api/orders")
         .then(res => res.json())
         .then(data => {
@@ -77,8 +85,8 @@ function OrderTrackingContent() {
         <div className="flex bg-white p-2 rounded-2xl shadow-lg w-full max-w-sm border border-brand-gold/10">
            <input 
              type="text" 
-             placeholder="Enter Order ID (e.g. DORD-...)" 
-             className="bg-transparent flex-grow px-4 outline-none" 
+             placeholder="Enter Order ID, Phone or Item..." 
+             className="bg-transparent flex-grow px-4 outline-none text-sm" 
              value={trackingInput}
              onChange={(e) => setTrackingInput(e.target.value)}
              onKeyPress={(e) => e.key === 'Enter' && handleTrackSearch()}
@@ -93,17 +101,27 @@ function OrderTrackingContent() {
         
         {user && userOrders.length > 0 && (
           <div className="mt-10 text-left w-full max-w-sm">
-             <h3 className="font-bold text-sm text-brand-green uppercase tracking-widest mb-3 text-center">Your Recent Orders</h3>
+             <h3 className="font-bold text-sm text-brand-green uppercase tracking-widest mb-3 text-center">{orderId && userOrders.length > 0 ? "Matching Orders" : "Your Recent Orders"}</h3>
              <div className="space-y-3">
-               {userOrders.slice(0, 3).map((o: any) => (
-                  <Link href={`/order-tracking?orderId=${o.orderId}`} key={o._id} className="block p-4 bg-white border border-brand-gold/20 rounded-2xl shadow-sm hover:shadow-md hover:border-brand-gold transition-all">
+               {userOrders.slice(0, 10).map((o: any) => (
+                  <Link href={`/order-tracking?orderId=${o.orderId}`} key={o._id} className="block p-5 bg-white border border-brand-gold/20 rounded-2xl shadow-sm hover:shadow-md hover:border-brand-gold transition-all">
                      <div className="flex justify-between items-center mb-1">
                         <p className="font-black text-brand-green text-sm">{o.orderId}</p>
                         <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-md ${o.status === 'delivered' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
                            {o.status}
                         </span>
                      </div>
-                     <p className="text-xs text-gray-500 font-medium">{new Date(o.createdAt).toLocaleDateString()} • ₹{o.payment?.totalAmount || '0'}</p>
+                     <p className="text-xs text-gray-500 font-medium mb-3">{new Date(o.createdAt).toLocaleDateString()} • ₹{o.payment?.totalAmount || '0'}</p>
+                     
+                     {/* ORDER FULL DETAILS ADDED HERE */}
+                     <div className="space-y-1.5 mt-3 pt-3 border-t border-gray-100">
+                        {o.items?.map((item: any, i: number) => (
+                           <div key={i} className="flex justify-between text-xs text-gray-600">
+                              <span className="font-medium">{item.quantity}x {item.name}</span>
+                              <span className="font-bold text-gray-400">₹{item.price * item.quantity}</span>
+                           </div>
+                        ))}
+                     </div>
                   </Link>
                ))}
              </div>

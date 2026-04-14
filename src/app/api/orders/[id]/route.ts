@@ -128,13 +128,16 @@ export async function PATCH(
           html: premiumThankYou ? premiumHtml : basicHtml,
         };
 
-        // 🔥 FIRE AND FORGET (Non-blocking) so that failures don't drop the delivery response
-        console.log(`[EMAIL] Attempting to send ${premiumThankYou ? 'Premium' : 'Basic'} delivery email to: ${order.customer.email}`);
-        transporter.sendMail(mailOptions)
-          .then(() => console.log('📧 Email sent successfully!'))
-          .catch((err: any) => console.error('❌ Email failed delivery (background error):', err.message));
-          
-        emailDeliveryStatus = " Email delivery queued in background.";
+        // ✅ Send directly and wait for result (Synchronous for reliability)
+        try {
+          console.log(`[EMAIL] Sending ${premiumThankYou ? 'Premium' : 'Basic'} delivery email to: ${order.customer.email}`);
+          await transporter.sendMail(mailOptions);
+          console.log('📧 Email sent successfully!');
+          emailDeliveryStatus = " Premium 'Thank You' email sent to customer!";
+        } catch (err: any) {
+          console.error('❌ Email failed delivery:', err.message);
+          emailDeliveryStatus = " Delivery succeeded but email failed to send (Check SMTP).";
+        }
 
       } else {
         emailDeliveryStatus = " Customer email not saved (Older order), so no email was sent.";
