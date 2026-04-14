@@ -20,30 +20,26 @@ export async function GET(req: Request) {
     const isAdmin = decoded?.role?.toLowerCase() === 'admin';
     const isUser = !!decoded;
 
-    if (isAdmin) {
-      // Admin sees everything
-      query = {};
-    } else if (isUser) {
-      // User only sees their own orders (Case-insensitive matching)
-      query = { "customer.email": { $regex: `^${decoded.email}$`, $options: 'i' } };
-    } else {
-      // No user session: This is a guest tracker search. 
-      // We should only return results if there is a specific search query to protect privacy.
-      const { searchParams } = new URL(req.url);
-      const q = searchParams.get('orderId')?.toLowerCase() || searchParams.get('phone');
-      
-      if (!q) {
-        // Return nothing for a general guest fetch
-        return NextResponse.json([]);
-      }
-      
-      // Allow searching by ID or Phone for guests
+    const { searchParams } = new URL(req.url);
+    const q = searchParams.get('orderId')?.toLowerCase() || searchParams.get('phone');
+
+    if (q) {
+      // If searching for a specific order (via Track feature), search the entire DB
       query = {
         $or: [
-          { orderId: { $regex: q, $options: 'i' } },
+          { orderId: { $regex: `^${q}$`, $options: 'i' } }, // Exact match for orderId
           { "customer.phone": q }
         ]
       };
+    } else if (isAdmin) {
+      // Admin sees everything when not searching
+      query = {};
+    } else if (isUser) {
+      // User only sees their own profile history
+      query = { "customer.email": { $regex: `^${decoded.email}$`, $options: 'i' } };
+    } else {
+      // NO TOKEN + NO SEARCH = NO DATA
+      return NextResponse.json([]);
     }
 
     const orders = await DirectOrder.find(query).sort({ createdAt: -1 }).lean();
