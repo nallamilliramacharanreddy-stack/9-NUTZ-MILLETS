@@ -30,6 +30,7 @@ export default function ProductDetail() {
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
+    email: '',
     altPhone: '',
     address: ''
   });
@@ -109,6 +110,17 @@ export default function ProductDetail() {
       }
     };
     if (slug) fetchProduct();
+
+    // Auto-fill user data
+    const userData = JSON.parse(localStorage.getItem("user") || "null");
+    if (userData) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: userData.name || "",
+        phone: userData.phone || "",
+        email: userData.email || ""
+      }));
+    }
   }, [slug]);
 
   const isOutOfStock = product && product.stock !== undefined && product.stock <= 0;
@@ -406,6 +418,19 @@ export default function ProductDetail() {
                             onChange={handleInputChange}
                             className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none transition-all"
                           />
+                        </div>
+                        <div className="relative">
+                          <input 
+                            required
+                            type="email" 
+                            name="email"
+                            placeholder="Email Address" 
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none transition-all"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
                           <input 
                             type="tel" 
                             name="altPhone"

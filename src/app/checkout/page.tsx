@@ -20,6 +20,7 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    email: "",
     address: "",
     pincode: "",
     lat: 0,
@@ -35,6 +36,17 @@ export default function CheckoutPage() {
     }
     setCartItems(items);
     setLoading(false);
+
+    // Auto-fill user data
+    const userData = JSON.parse(localStorage.getItem("user") || "null");
+    if (userData) {
+      setFormData(prev => ({
+        ...prev,
+        name: userData.name || "",
+        phone: userData.phone || "",
+        email: userData.email || ""
+      }));
+    }
   }, [router]);
 
   const updateQuantity = (id: string, delta: number) => {
@@ -108,6 +120,7 @@ export default function CheckoutPage() {
       customer: {
         name: formData.name,
         phone: formData.phone,
+        email: formData.email,
         address: formData.address,
         pincode: formData.pincode,
         location: { lat: formData.lat, lng: formData.lng }
@@ -206,9 +219,19 @@ export default function CheckoutPage() {
                         placeholder="+91 9949131747"
                       />
                     </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">Email Address</label>
+                      <input 
+                        type="email" 
+                        value={formData.email}
+                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        className="w-full p-4 bg-gray-50 border rounded-2xl focus:ring-2 focus:ring-brand-gold outline-none"
+                        placeholder="john@example.com"
+                      />
+                    </div>
                     <button 
                       onClick={() => setStep(2)}
-                      disabled={!formData.name || !formData.phone}
+                      disabled={!formData.name || !formData.phone || !formData.email}
                       className="w-full py-4 bg-brand-green text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
                     >
                       Next Step

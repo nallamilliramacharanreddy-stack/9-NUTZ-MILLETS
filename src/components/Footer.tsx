@@ -93,7 +93,7 @@ export default function Footer() {
               <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-all">
                 <MapPin size={18} />
               </div>
-              <p className="text-emerald-100/70 text-[13px] font-medium leading-relaxed">9 NUTZ MILLETS NEAR YSR STATUE,<br />LN PURAM, AP.</p>
+              <p className="text-emerald-100/70 text-[13px] font-medium leading-relaxed">9 NUTZ MILLETS NEAR YSR STATUE,<br />GOLLALA MAMIDADA, LN PURAM, AP.</p>
             </div>
             <div className="flex items-center space-x-4 group cursor-pointer">
               <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-all">

@@ -31,9 +31,9 @@ export async function POST(req: Request) {
     const { customer, product, orderItems, payment, totalPrice, shippingPrice } = body;
 
     // ✅ Validation
-    if (!customer || !customer.name || !customer.phone || !customer.address || !customer.pincode) {
+    if (!customer || !customer.name || !customer.phone || !customer.email || !customer.address || !customer.pincode) {
       return NextResponse.json(
-        { message: 'Missing required customer information (Name, Phone, Address, and Pincode are mandatory)' },
+        { message: 'Missing required customer information (Name, Phone, Email, Address, and Pincode are mandatory)' },
         { status: 400 }
       );
     }

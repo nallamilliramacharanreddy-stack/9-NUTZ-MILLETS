@@ -5,6 +5,7 @@ export interface IDirectOrder {
   customer: {
     name: string;
     phone: string;
+    email: string;
     altPhone?: string;
     address: string;
     pincode: string;
@@ -34,6 +35,7 @@ const directOrderSchema = new Schema<IDirectOrder>(
     customer: {
       name: { type: String, required: true },
       phone: { type: String, required: true },
+      email: { type: String, required: true },
       altPhone: { type: String },
       address: { type: String, required: true },
       pincode: { type: String, required: true },
