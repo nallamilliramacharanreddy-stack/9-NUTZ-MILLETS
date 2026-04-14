@@ -22,11 +22,12 @@ function OrderTrackingContent() {
   useEffect(() => {
     if (orderId) {
        setLoading(true);
-       fetch("/api/orders").then(res => res.json()).then(data => {
+       fetch("/api/orders", { credentials: "include" }).then(res => res.json()).then(data => {
          const q = orderId.toLowerCase();
          const matches = data.filter((o: any) => 
             o.orderId.toLowerCase() === q ||
             o.customer?.phone?.includes(q) ||
+            o.customer?.email?.toLowerCase() === q ||
             o.items?.some((item: any) => item.name.toLowerCase().includes(q))
          );
 
@@ -53,7 +54,7 @@ function OrderTrackingContent() {
     const userData = JSON.parse(localStorage.getItem("user") || "null");
     setUser(userData);
     if (userData && !orderId) {
-      fetch("/api/orders")
+      fetch("/api/orders", { credentials: "include" })
         .then(res => res.json())
         .then(data => {
              const userHistory = data.filter((o: any) => o.customer?.name === userData.name || o.customer?.phone === userData.phone);

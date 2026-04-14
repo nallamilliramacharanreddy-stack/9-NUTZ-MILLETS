@@ -24,8 +24,8 @@ export async function GET(req: Request) {
       // Admin sees everything
       query = {};
     } else if (isUser) {
-      // User only sees their own orders
-      query = { "customer.email": decoded.email };
+      // User only sees their own orders (Case-insensitive matching)
+      query = { "customer.email": { $regex: new RegExp(`^${decoded.email}$`, 'i') } };
     } else {
       // No user session: This is a guest tracker search. 
       // We should only return results if there is a specific search query to protect privacy.
