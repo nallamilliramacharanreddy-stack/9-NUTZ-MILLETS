@@ -311,6 +311,10 @@ export default function ProductDetail() {
             </div>
 
             <button 
+               onClick={() => {
+                 const message = encodeURIComponent(`Hi, I'm interested in "${product.name}". Could you provide more details?`);
+                 window.open(`https://wa.me/919949131747?text=${message}`, '_blank');
+               }}
                className="w-full py-4 border-2 border-green-500 text-green-600 font-bold rounded-2xl flex items-center justify-center space-x-2 hover:bg-green-50 transition-all mb-12"
             >
                <MessageCircle size={20} />
