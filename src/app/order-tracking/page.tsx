@@ -63,8 +63,9 @@ function OrderTrackingContent() {
         .then(res => res.json())
         .then(data => {
              if (Array.isArray(data)) {
-               const userHistory = data.filter((o: any) => o.customer?.name === userData.name || o.customer?.phone === userData.phone);
-               setUserOrders(userHistory);
+               // The backend already filters these by email for security, 
+               // so we can trust the results directly.
+               setUserOrders(data);
              } else {
                console.error("User history fetch returned non-array:", data);
              }
