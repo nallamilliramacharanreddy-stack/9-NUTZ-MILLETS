@@ -5,16 +5,52 @@ import Product from '@/models/Product';
 import nodemailer from 'nodemailer';
 import { rateLimit, securityResponse, logSecurityEvent } from '@/lib/security';
 
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/jwt';
+
 export async function GET(req: Request) {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value || req.headers.get('authorization')?.split(' ')[1];
+    const decoded = token ? verifyAccessToken(token) : null;
+
     await connectDB();
-    const orders = await DirectOrder.find({}).sort({ createdAt: -1 }).lean();
+    
+    let query = {};
+    const isAdmin = decoded?.role?.toLowerCase() === 'admin';
+    const isUser = !!decoded;
+
+    if (isAdmin) {
+      // Admin sees everything
+      query = {};
+    } else if (isUser) {
+      // User only sees their own orders
+      query = { "customer.email": decoded.email };
+    } else {
+      // No user session: This is a guest tracker search. 
+      // We should only return results if there is a specific search query to protect privacy.
+      const { searchParams } = new URL(req.url);
+      const q = searchParams.get('orderId')?.toLowerCase() || searchParams.get('phone');
+      
+      if (!q) {
+        // Return nothing for a general guest fetch
+        return NextResponse.json([]);
+      }
+      
+      // Allow searching by ID or Phone for guests
+      query = {
+        $or: [
+          { orderId: { $regex: q, $options: 'i' } },
+          { "customer.phone": q }
+        ]
+      };
+    }
+
+    const orders = await DirectOrder.find(query).sort({ createdAt: -1 }).lean();
     return NextResponse.json(orders);
   } catch (error: any) {
-    const message = error.message?.includes("connect") || error.message?.includes("timeout")
-      ? "Database connection failed. Please check Atlas IP Whitelist."
-      : "Failed to fetch orders";
-    return securityResponse(message, 500);
+    console.error('Orders Fetch Error:', error.message);
+    return securityResponse("Failed to fetch orders", 500);
   }
 }
 

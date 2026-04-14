@@ -58,8 +58,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // 3. PROTECTED ROUTES (RBAC)
-  // catching /api/orders as well to ensure it uses common auth logic
-  const isAdminRoute = pathname.startsWith('/admin') || pathname.startsWith('/api/admin') || pathname.startsWith('/api/orders');
+  // [SEC-UPDATE] removing /api/orders from strict middleware block to allow user-level filtering in route handlers
+  const isAdminRoute = pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
   
   if (isAdminRoute && method !== 'POST') { // Allow guest order POST
     const token = request.cookies.get('accessToken')?.value || headers.get('authorization')?.split(' ')[1];
