@@ -107,9 +107,9 @@ export default function ProductDetail() {
 
   const isOutOfStock = product && product.stock !== undefined && product.stock <= 0;
 
-  const codSurcharge = 50;
+  const codSurcharge = 0;
   const subtotal = product ? product.price * quantity : 0;
-  const total = subtotal + (paymentMethod === 'cod' ? codSurcharge : 0);
+  const total = subtotal;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -418,8 +418,8 @@ export default function ProductDetail() {
                         <h3 className="font-bold uppercase tracking-widest text-sm">Payment Method</h3>
                       </div>
                       <div className="p-4 border border-brand-gold bg-brand-gold/5 rounded-2xl">
-                         <span className="font-bold text-brand-green">Cash on Delivery (COD)</span>
-                         <p className="text-xs text-brand-gold font-bold">Extra ₹50 charge included for handling</p>
+                          <span className="font-bold text-brand-green">Cash on Delivery (COD)</span>
+                          <p className="text-xs text-brand-gold font-bold italic">No extra charges applied</p>
                       </div>
                     </div>
 
@@ -437,9 +437,9 @@ export default function ProductDetail() {
                          <span>Item Price</span>
                          <span>₹{subtotal}</span>
                        </div>
-                       <div className="flex justify-between text-sm font-medium opacity-80">
-                         <span>COD Surcharge</span>
-                         <span>₹{codSurcharge}</span>
+                       <div className="flex justify-between text-sm font-medium opacity-80 items-baseline">
+                         <span>Delivery & COD Handling</span>
+                         <span className="text-emerald-300 uppercase text-[10px] font-black tracking-widest bg-emerald-500/20 px-2 py-0.5 rounded-md">Free</span>
                        </div>
                        <div className="pt-4 border-t border-white/20 flex justify-between items-end">
                          <span className="font-bold uppercase tracking-widest text-xs">Final Amount</span>

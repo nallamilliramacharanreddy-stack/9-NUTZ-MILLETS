@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ListOrdered, Search, Filter, MoreVertical, CheckCircle, Clock, Truck, Package, XCircle, Loader2, MapPin, DollarSign, Check, Trash2 } from "lucide-react";
+import { ListOrdered, Search, Filter, MoreVertical, CheckCircle, Clock, Truck, Package, XCircle, Loader2, MapPin, DollarSign, Check, Trash2, ChevronDown, ChevronUp, Eye, ShoppingCart, MapPinned } from "lucide-react";
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -110,8 +111,8 @@ export default function AdminOrders() {
               <DollarSign size={18} />
             </div>
             <div>
-              <p className="text-[9px] uppercase font-bold text-emerald-600 tracking-wider">Total Revenue</p>
-              <p className="text-lg font-black text-emerald-700 leading-tight">₹{totalRevenue}</p>
+              <p className="text-[11px] uppercase font-bold text-emerald-600 tracking-wider">Total Revenue</p>
+              <p className="text-xl font-black text-emerald-700 leading-tight">₹{totalRevenue}</p>
             </div>
           </div>
 
@@ -141,10 +142,11 @@ export default function AdminOrders() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-gray-50 text-gray-400 text-[10px] uppercase font-black tracking-[0.2em]">
+                <tr className="bg-gray-50 text-gray-400 text-xs uppercase font-black tracking-[0.2em]">
+                  <th className="px-6 py-5 w-10"></th>
                   <th className="px-6 py-5">Order Info</th>
-                  <th className="px-6 py-5">Customer</th>
-                  <th className="px-6 py-5 text-center">Distance Check</th>
+                  <th className="px-6 py-5">Customer & Address</th>
+                  <th className="px-6 py-5">Ordered Items</th>
                   <th className="px-6 py-5">Status</th>
                   <th className="px-6 py-5">Amount</th>
                   <th className="px-6 py-5 text-center">Action</th>
@@ -152,61 +154,147 @@ export default function AdminOrders() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredOrders.length > 0 ? filteredOrders.map((order) => (
-                  <tr key={order._id} className="hover:bg-brand-cream/10 transition-colors group">
-                    <td className="px-6 py-4">
-                      <p className="font-black text-brand-green bg-brand-cream inline-block px-2 py-0.5 rounded-md border border-brand-gold/30">{order.orderId}</p>
-                      <p className="text-[10px] text-gray-400 mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="font-bold text-gray-700 text-sm">{order.customer.name}</p>
-                      <p className="text-xs text-gray-400">{order.customer.phone}</p>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider
-                        ${(order.distance || 0) > 20 ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-brand-green/10 text-brand-green border border-brand-green/20'}`}>
-                        {order.distance || 0} km
-                      </span>
-                      {order.distance > 20 && (
-                        <p className="text-[8px] text-red-500 font-bold mt-1 uppercase">Outside Zone</p>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-bold border ${getStatusColor(order.status)} w-fit`}>
-                        {getStatusIcon(order.status)}
-                        <span>{order.status}</span>
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 font-black text-brand-green">₹{order.payment?.totalAmount || order.totalPrice}</td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center space-x-2">
-                        {order.status !== 'delivered' && order.status !== 'cancelled' ? (
+                  <React.Fragment key={order._id}>
+                    <tr 
+                      className={`hover:bg-brand-cream/10 transition-colors group cursor-pointer ${expandedOrderId === order.orderId ? 'bg-brand-cream/5' : ''}`}
+                      onClick={() => setExpandedOrderId(expandedOrderId === order.orderId ? null : order.orderId)}
+                    >
+                      <td className="px-6 py-4">
+                        {expandedOrderId === order.orderId ? <ChevronUp size={18} className="text-brand-gold" /> : <ChevronDown size={18} className="text-gray-400 group-hover:text-brand-gold" />}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-2">
+                          <p className="font-black text-brand-green bg-brand-cream inline-block px-2 py-0.5 rounded-md border border-brand-gold/30 text-sm">{order.orderId}</p>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
+                      </td>
+                      <td className="px-6 py-4 max-w-[200px]">
+                        <p className="font-bold text-gray-700 text-base">{order.customer.name}</p>
+                        <p className="text-xs text-gray-400">{order.customer.phone}</p>
+                        <p className="text-xs text-brand-green font-medium mt-1 line-clamp-2">{order.customer.address}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          {order.items?.map((item: any, i: number) => (
+                            <p key={i} className="text-sm font-bold text-gray-600 leading-tight">
+                              {item.name} <span className="text-brand-gold text-xs">x{item.quantity}</span>
+                            </p>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-bold border ${getStatusColor(order.status)} w-fit`}>
+                          {getStatusIcon(order.status)}
+                          <span>{order.status}</span>
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 font-black text-brand-green">₹{order.payment?.totalAmount || order.totalPrice}</td>
+                      <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-center space-x-2">
+                          {order.status !== 'delivered' && order.status !== 'cancelled' ? (
+                            <button 
+                              onClick={() => markAsDelivered(order._id)}
+                              className="flex items-center space-x-1 px-3 py-2 bg-emerald-500 text-white text-[10px] uppercase tracking-wider font-black rounded-lg hover:shadow-lg hover:bg-emerald-600 transition-all"
+                            >
+                              <Check size={14} />
+                              <span>Deliver</span>
+                            </button>
+                          ) : (
+                            <span className="text-xs font-black uppercase tracking-wider text-gray-400 border border-gray-200 px-3 py-1.5 rounded-lg flex items-center space-x-1">
+                              <CheckCircle size={14} />
+                              <span>Done</span>
+                            </span>
+                          )}
+                          
                           <button 
-                            onClick={() => markAsDelivered(order._id)}
-                            className="flex items-center space-x-1 px-3 py-2 bg-emerald-500 text-white text-[10px] uppercase tracking-wider font-black rounded-lg hover:shadow-lg hover:bg-emerald-600 transition-all"
+                            title="Delete Order Record"
+                            onClick={() => handleDeleteOrder(order._id, order.orderId)}
+                            className="p-2 bg-red-50 text-red-300 hover:text-red-600 hover:bg-red-100 rounded-lg transition-all"
                           >
-                            <Check size={14} />
-                            <span>Deliver</span>
+                            <Trash2 size={16} />
                           </button>
-                        ) : (
-                          <span className="text-[10px] font-black uppercase tracking-wider text-gray-400 border border-gray-200 px-3 py-1.5 rounded-lg flex items-center space-x-1">
-                            <CheckCircle size={14} />
-                            <span>Done</span>
-                          </span>
-                        )}
-                        
-                        <button 
-                          title="Delete Order Record"
-                          onClick={() => handleDeleteOrder(order._id, order.orderId)}
-                          className="p-2 bg-red-50 text-red-300 hover:text-red-600 hover:bg-red-100 rounded-lg transition-all"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    <AnimatePresence>
+                      {expandedOrderId === order.orderId && (
+                        <tr className="bg-gray-50/50">
+                          <td colSpan={7} className="px-6 py-0 border-none overflow-hidden">
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3, ease: "easeInOut" }}
+                              className="py-6 space-y-6"
+                            >
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Shipping Address */}
+                                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col space-y-4">
+                                  <div className="flex items-center space-x-2 text-brand-green">
+                                    <MapPinned size={18} />
+                                    <h4 className="text-sm font-black uppercase tracking-widest">Full Delivery Address</h4>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <p className="text-base text-gray-700 font-medium leading-relaxed">
+                                      {order.customer.address}
+                                    </p>
+                                    <div className="flex items-center space-x-4 pt-2 border-t border-gray-50 mt-2">
+                                      <div>
+                                        <p className="text-xs text-gray-400 uppercase font-bold">Pincode</p>
+                                        <p className="text-base font-black text-brand-green">{order.customer.pincode}</p>
+                                      </div>
+                                      {order.customer.altPhone && (
+                                        <div>
+                                          <p className="text-xs text-gray-400 uppercase font-bold">Alt Phone</p>
+                                          <p className="text-base font-black text-brand-green">{order.customer.altPhone}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Order Items */}
+                                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col space-y-4">
+                                  <div className="flex items-center space-x-2 text-brand-gold">
+                                    <ShoppingCart size={18} />
+                                    <h4 className="text-sm font-black uppercase tracking-widest">Ordered Items ({order.items?.length || 0})</h4>
+                                  </div>
+                                  <div className="space-y-3">
+                                    {order.items?.map((item: any, idx: number) => (
+                                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 group">
+                                        <div className="flex items-center space-x-3">
+                                          {item.image && (
+                                            <div className="w-10 h-10 rounded-lg overflow-hidden border border-gray-200 bg-white p-1">
+                                              <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                                            </div>
+                                          )}
+                                          <div>
+                                            <p className="text-base font-bold text-gray-800">{item.name}</p>
+                                            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Qty: {item.quantity}</p>
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="text-base font-black text-brand-green">₹{item.price * item.quantity}</p>
+                                          <p className="text-xs text-gray-400">₹{item.price} each</p>
+                                        </div>
+                                      </div>
+                                    ))}
+                                    {(!order.items || order.items.length === 0) && (
+                                      <p className="text-sm text-gray-400 italic py-4 text-center">No item details available.</p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          </td>
+                        </tr>
+                      )}
+                    </AnimatePresence>
+                  </React.Fragment>
                 )) : (
                   <tr>
-                    <td colSpan={6} className="px-6 py-20 text-center text-gray-400 font-bold uppercase tracking-widest">No active orders found.</td>
+                    <td colSpan={7} className="px-6 py-20 text-center text-gray-400 font-bold uppercase tracking-widest">No active orders found.</td>
                   </tr>
                 )}
               </tbody>

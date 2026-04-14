@@ -38,7 +38,7 @@ export default function CartPage() {
   };
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shipping = subtotal > 500 ? 0 : 40;
+  const shipping = 0; // Delivery is now free for all orders
   const total = subtotal + shipping;
 
   if (loading) {
@@ -134,10 +134,10 @@ export default function CartPage() {
                     <span>Subtotal</span>
                     <span className="font-bold text-brand-green">₹{subtotal}</span>
                   </div>
-                  <div className="flex justify-between text-gray-500">
+                  <div className="flex justify-between text-gray-500 items-baseline">
                     <span>Delivery</span>
-                    <span className={shipping === 0 ? "text-green-500 uppercase text-xs font-bold" : "font-bold text-brand-green"}>
-                       {shipping === 0 ? "Free" : `₹${shipping}`}
+                    <span className="text-emerald-500 uppercase text-xs font-black tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md">
+                       Free
                     </span>
                   </div>
                   <div className="pt-4 border-t flex justify-between">

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import DirectOrder from '@/models/Order';
 import Product from '@/models/Product';
+import nodemailer from 'nodemailer';
 import { rateLimit, securityResponse, logSecurityEvent } from '@/lib/security';
 
 export async function GET(req: Request) {
@@ -79,13 +80,66 @@ export async function POST(req: Request) {
       payment: {
         method: payment?.method || 'cod',
         status: 'pending',
-        totalAmount:
-          totalPrice ||
-          finalItems.reduce((sum, i) => sum + i.price * i.quantity, 0) +
-          (shippingPrice || 0),
+        totalAmount: finalItems.reduce((sum, i) => sum + i.price * i.quantity, 0),
       },
       status: 'pending',
     });
+
+    // ✅ Send Admin Notification (Email)
+    try {
+      const itemsSummary = finalItems.map(i => `<li><strong>${i.name}</strong> - Qty: ${i.quantity} (₹${i.price})</li>`).join("");
+      
+      const adminTransporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD?.replace(/\s/g, ''),
+        },
+      });
+
+      const adminMailOptions = {
+        from: `"9 Nutzz Millets Order System" <${process.env.EMAIL_USER}>`,
+        to: process.env.EMAIL_USER, // Admin's email
+        subject: `🔔 NEW ORDER PLACED: ${order.orderId}`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 2px solid #1a5d1a; border-radius: 12px;">
+            <h2 style="color: #1a5d1a; text-align: center; border-bottom: 2px solid #f4f4f4; padding-bottom: 10px;">New Order Received!</h2>
+            
+            <div style="background: #fdfaf0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0; color: #d4a017; font-weight: bold; font-size: 14px;">ORDER ID</p>
+              <h3 style="margin: 5px 0 0 0; color: #1a5d1a;">#${order.orderId}</h3>
+            </div>
+
+            <h4 style="color: #1a5d1a; margin-bottom: 10px; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Customer Details</h4>
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="margin: 5px 0;"><strong>Name:</strong> ${customer.name}</p>
+              <p style="margin: 5px 0;"><strong>Phone:</strong> ${customer.phone}</p>
+              <p style="margin: 5px 0;"><strong>Address:</strong> ${customer.address}, ${customer.pincode}</p>
+            </div>
+
+            <h4 style="color: #1a5d1a; margin-bottom: 10px; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ordered Items</h4>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              ${itemsSummary}
+            </ul>
+
+            <div style="margin-top: 25px; padding-top: 15px; border-top: 2px solid #f4f4f4; text-align: right;">
+              <p style="margin: 0; font-size: 18px; color: #1a5d1a; font-weight: bold;">Total Amount: ₹${order.payment.totalAmount}</p>
+            </div>
+
+            <div style="margin-top: 30px; text-align: center;">
+              <a href="${process.env.NEXT_PUBLIC_URL}/admin/orders" 
+                 style="background: #1a5d1a; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                View Order in Admin Panel
+              </a>
+            </div>
+          </div>
+        `,
+      };
+
+      await adminTransporter.sendMail(adminMailOptions);
+    } catch (emailError) {
+      console.error('Admin Email Notification failed but order was saved:', emailError);
+    }
 
     // ✅ Update Stock Inventory
     try {

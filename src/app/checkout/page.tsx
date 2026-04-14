@@ -151,7 +151,7 @@ export default function CheckoutPage() {
   };
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shipping = subtotal > 500 ? 0 : 40;
+  const shipping = 0; // Free delivery
   const total = subtotal + shipping;
 
   if (loading && step !== 3) {
@@ -404,10 +404,10 @@ export default function CheckoutPage() {
                     <span>Subtotal</span>
                     <span>₹{subtotal}</span>
                  </div>
-                 <div className="flex justify-between text-sm text-gray-500">
-                    <span>Delivery Fee</span>
-                    <span>{shipping === 0 ? "Free" : `₹${shipping}`}</span>
-                 </div>
+                  <div className="flex justify-between text-sm text-gray-500 items-baseline">
+                     <span>Delivery Fee</span>
+                     <span className="text-emerald-500 uppercase text-[10px] font-black tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md">Free</span>
+                  </div>
                  <div className="flex justify-between items-center text-lg font-bold text-brand-green pt-2">
                     <span>Total Amount</span>
                     <span className="text-2xl font-black">₹{total}</span>
