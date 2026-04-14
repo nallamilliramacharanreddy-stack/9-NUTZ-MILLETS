@@ -183,11 +183,12 @@ export async function DELETE(
   try {
     const { id } = await params;
     
-    // Authorization Check
-    const token = req.cookies.get('accessToken')?.value;
+    // Auth Consistency Fix
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value || req.headers.get('authorization')?.split(' ')[1];
     const decoded = token ? verifyAccessToken(token) : null;
 
-    if (!decoded || decoded.role !== 'admin') {
+    if (!decoded || decoded.role?.toLowerCase() !== 'admin') {
       return securityResponse('Forbidden: Admin access only', 403);
     }
 

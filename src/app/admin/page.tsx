@@ -2,12 +2,33 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ShoppingBag, Users, DollarSign, Package, TrendingUp, ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react";
+import { ShoppingBag, Users, DollarSign, Package, TrendingUp, ArrowUpRight, ArrowDownRight, Loader2, Trash2 } from "lucide-react";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleDeleteOrder = async (id: string, orderId: string) => {
+    if (!confirm(`Are you sure you want to remove Order #${orderId}? this action cannot be undone.`)) return;
+    
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
+
+      if (res.ok) {
+        setRecentOrders(prev => prev.filter(o => o._id !== id));
+        // Also refresh stats to be safe
+        fetchDashboardData();
+      } else {
+        alert("Failed to delete order. Please check permissions.");
+      }
+    } catch (err) {
+      console.error("Delete failed", err);
+    }
+  };
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -97,7 +118,8 @@ export default function AdminDashboard() {
                   <th className="px-6 py-4">Customer</th>
                   <th className="px-6 py-4">Distance</th>
                   <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-5 text-right">Amount</th>
+                  <th className="px-6 py-4">Amount</th>
+                  <th className="px-6 py-4 text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -109,15 +131,27 @@ export default function AdminDashboard() {
                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${order.distance > 20 ? 'bg-red-50 text-red-500' : 'bg-brand-gold/10 text-brand-gold'}`}>{order.distance} km</span>
                     </td>
                     <td className="px-6 py-4 text-xs font-bold">
-                       <span className={`px-3 py-1 rounded-full ${order.status === 'Delivered' ? 'bg-green-100 text-green-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                       <span className={`px-3 py-1 rounded-full ${order.status === 'delivered' ? 'bg-green-100 text-green-700' : 'bg-emerald-100 text-emerald-700'}`}>
                           {order.status}
                        </span>
                     </td>
-                    <td className="px-6 py-4 text-right font-black text-brand-green">₹{order.payment?.totalAmount || '0'}</td>
+                    <td className="px-6 py-4 font-black text-brand-green">₹{order.payment?.totalAmount || '0'}</td>
+                    <td className="px-6 py-4 text-center">
+                        <button 
+                          onClick={(e) => {
+                             e.stopPropagation();
+                             handleDeleteOrder(order._id, order.orderId);
+                          }}
+                          className="p-2 text-red-100 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                          title="Remove Order"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                     </td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">No recent orders yet.</td>
+                    <td colSpan={6} className="px-6 py-10 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">No recent orders yet.</td>
                   </tr>
                 )}
               </tbody>
