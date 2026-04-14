@@ -71,12 +71,7 @@ export async function PATCH(
       return NextResponse.json({ message: 'Invalid status' }, { status: 400 });
     }
 
-    await connectDB();
 
-    const order = await DirectOrder.findById(id);
-    if (!order) {
-      return NextResponse.json({ message: 'Order not found' }, { status: 404 });
-    }
 
     order.status = status;
     if (status === 'delivered') {
