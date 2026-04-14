@@ -97,6 +97,7 @@ function OrderTrackingContent() {
 
   if (!orderId) {
     return (
+      <div className="flex flex-col items-center justify-center p-20 text-center">
         {(!user || userOrders.length === 0) && (
           <>
             <AlertCircle size={80} className="text-brand-gold mb-6" />
