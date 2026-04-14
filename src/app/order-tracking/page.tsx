@@ -99,25 +99,28 @@ function OrderTrackingContent() {
            </button>
         </div>
         
-        {user && userOrders.length > 0 && (
+        
+        {userOrders.length > 0 && (
           <div className="mt-10 text-left w-full max-w-sm">
              <h3 className="font-bold text-sm text-brand-green uppercase tracking-widest mb-3 text-center">{orderId && userOrders.length > 0 ? "Matching Orders" : "Your Recent Orders"}</h3>
-             <div className="space-y-3">
+             <div className="space-y-4">
                {userOrders.slice(0, 10).map((o: any) => (
-                  <Link href={`/order-tracking?orderId=${o.orderId}`} key={o._id} className="block p-5 bg-white border border-brand-gold/20 rounded-2xl shadow-sm hover:shadow-md hover:border-brand-gold transition-all">
+                  <Link href={`/order-tracking?orderId=${o.orderId}`} key={o._id} className="block p-5 bg-white border border-brand-gold/20 rounded-2xl shadow-md hover:shadow-lg hover:border-brand-gold transition-all">
                      <div className="flex justify-between items-center mb-1">
                         <p className="font-black text-brand-green text-sm">{o.orderId}</p>
                         <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-md ${o.status === 'delivered' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
                            {o.status}
                         </span>
                      </div>
-                     <p className="text-xs text-gray-500 font-medium mb-3">{new Date(o.createdAt).toLocaleDateString()} • ₹{o.payment?.totalAmount || '0'}</p>
+                     <div className="mb-3">
+                        <p className="text-[10px] font-black text-brand-gold uppercase tracking-wider">{o.customer?.name}</p>
+                        <p className="text-xs text-gray-500 font-medium">{new Date(o.createdAt).toLocaleDateString()} • ₹{o.payment?.totalAmount || '0'}</p>
+                     </div>
                      
-                     {/* ORDER FULL DETAILS ADDED HERE */}
                      <div className="space-y-1.5 mt-3 pt-3 border-t border-gray-100">
                         {o.items?.map((item: any, i: number) => (
-                           <div key={i} className="flex justify-between text-xs text-gray-600">
-                              <span className="font-medium">{item.quantity}x {item.name}</span>
+                           <div key={i} className="flex justify-between text-[11px] text-gray-600">
+                              <span className="font-medium truncate pr-4">{item.quantity}x {item.name}</span>
                               <span className="font-bold text-gray-400">₹{item.price * item.quantity}</span>
                            </div>
                         ))}
@@ -242,8 +245,10 @@ function OrderTrackingContent() {
                   <MapPin size={24} />
                </div>
                <div>
-                 <p className="text-xs font-bold text-gray-400 uppercase mb-1">Delivery Location</p>
-                 <p className="text-brand-green font-medium">Verified Address within 40km zone.</p>
+                 <p className="text-xs font-bold text-gray-400 uppercase mb-1">Delivery Address</p>
+                 <p className="text-brand-green font-bold text-sm truncate max-w-[200px]">{currentOrder.customer?.name}</p>
+                 <p className="text-brand-green font-medium text-xs leading-relaxed">{currentOrder.customer?.address}, {currentOrder.customer?.pincode}</p>
+                 <p className="text-brand-green font-bold text-xs mt-1">{currentOrder.customer?.phone}</p>
                </div>
             </div>
             <div className="flex items-start space-x-4">

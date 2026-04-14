@@ -13,9 +13,15 @@ export async function PATCH(
     // Await params since Next.js 16 requires it for app-router dynamic routes
     const { id } = await params;
     
-    // Authorization Check
+    // Extract token from cookie or Authorization header
+    const authHeader = req.headers.get('authorization');
     const tokenCookie = req.cookies.get('accessToken');
-    const token = tokenCookie?.value;
+    
+    let token = tokenCookie?.value;
+    if (!token && authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+
     const decoded = token ? verifyAccessToken(token) : null;
 
     if (!decoded) {
