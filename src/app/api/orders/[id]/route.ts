@@ -31,23 +31,40 @@ export async function PATCH(
 
     const decoded = token ? verifyAccessToken(token) : null;
     if (decoded) {
-      console.log(`[AUTH-DEBUG] Decoded User:`, decoded.email || 'Valid Admin Payload');
+      console.log(`[AUTH-DEBUG] Decoded User:`, decoded.email || 'Valid Payload');
     }
 
-    if (!decoded) {
-      console.warn(`[AUTH] Failed: ${token ? 'Invalid/Expired Token' : 'Missing Token'}`);
-      return securityResponse(`Forbidden: ${token ? 'Session expired. Please log in again.' : 'Authentication required.'}`, 403);
+    await connectDB();
+    const order = await DirectOrder.findById(id);
+    if (!order) {
+      return NextResponse.json({ message: 'Order not found' }, { status: 404 });
     }
 
-    if (decoded.role?.toLowerCase() !== 'admin') {
-      console.warn(`[AUTH] Forbidden: User ${decoded.email} has role ${decoded.role}, expected admin`);
-      return securityResponse('Forbidden: Admin access only', 403);
-    }
-
-    console.log(`[AUTH] Success: Admin ${decoded.email} authorized for order ${id}`);
-
+    // RBAC: Admin can do anything. User can only cancel THEIR OWN pending order.
+    let isAuthorized = false;
+    const isAdmin = decoded?.role?.toLowerCase() === 'admin';
+    const isOwner = decoded && order.customer?.email?.toLowerCase() === decoded.email?.toLowerCase();
+    
     const body = await req.json();
     const { status, premiumThankYou } = body;
+
+    if (isAdmin) {
+      isAuthorized = true;
+    } else if (isOwner) {
+      // User can ONLY cancel a PENDING order
+      if (status === 'cancelled' && order.status === 'pending') {
+        isAuthorized = true;
+      } else {
+        return securityResponse('Forbidden: You can only cancel pending orders.', 403);
+      }
+    }
+
+    if (!isAuthorized) {
+      console.warn(`[AUTH] Unauthorized: User ${decoded?.email} attempted to update order ${id} to ${status}`);
+      return securityResponse('Forbidden: You do not have permission to update this order.', 403);
+    }
+
+    console.log(`[AUTH] Authorized: ${isAdmin ? 'Admin' : 'Owner'} ${decoded?.email} updating order ${id} to ${status}`);
 
     const allowedStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
     if (!allowedStatuses.includes(status)) {

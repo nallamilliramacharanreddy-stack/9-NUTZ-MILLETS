@@ -71,7 +71,7 @@ export default function Navbar() {
     { name: "Home", href: "/" },
     { name: "Shop", href: "/shop" },
     { name: "Our Story", href: "/about" },
-    { name: "Track Order", href: "/order-tracking" },
+    { name: "My Orders", href: "/order-tracking" },
   ];
 
   return (

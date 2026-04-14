@@ -63,6 +63,35 @@ function OrderTrackingContent() {
     }
   }, []);
 
+  const handleCancelOrder = async (id: string, orderId: string) => {
+    if (!confirm(`Are you sure you want to cancel Order #${orderId}?`)) return;
+    
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ status: "cancelled" })
+      });
+
+      if (res.ok) {
+        alert("Order cancelled successfully.");
+        // Refresh local state
+        setUserOrders(prev => prev.map(o => o._id === id ? { ...o, status: 'cancelled' } : o));
+        if (currentOrder?._id === id) {
+           setCurrentOrder({ ...currentOrder, status: 'cancelled' });
+           setStatus("Cancelled");
+        }
+      } else {
+        const data = await res.json();
+        alert(data.message || "Failed to cancel order.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong.");
+    }
+  };
+
   const steps = [
     { name: "Ordered", icon: <Clock size={24} />, description: "Order received" },
     { name: "Delivered", icon: <CheckCircle size={24} />, description: "Successfully handed over" },
@@ -80,8 +109,8 @@ function OrderTrackingContent() {
     return (
       <div className="flex flex-col items-center justify-center p-20 text-center">
         <AlertCircle size={80} className="text-brand-gold mb-6" />
-        <h2 className="text-2xl font-black text-brand-green mb-4">No order found</h2>
-        <p className="text-gray-500 mb-8 max-w-md">Please enter your order ID or phone number to track your delicious 9 Nutzz order.</p>
+        <h2 className="text-2xl font-black text-brand-green mb-4">Search Orders</h2>
+        <p className="text-gray-500 mb-8 max-w-md">Enter your order ID, email, or phone number to track your delicious 9 Nutzz order.</p>
         <div className="flex bg-white p-2 rounded-2xl shadow-lg w-full max-w-sm border border-brand-gold/10">
            <input 
              type="text" 
@@ -102,30 +131,44 @@ function OrderTrackingContent() {
         
         {userOrders.length > 0 && (
           <div className="mt-10 text-left w-full max-w-sm">
-             <h3 className="font-bold text-sm text-brand-green uppercase tracking-widest mb-3 text-center">{orderId && userOrders.length > 0 ? "Matching Orders" : "Your Recent Orders"}</h3>
+             <h3 className="font-bold text-sm text-brand-green uppercase tracking-widest mb-3 text-center">{orderId && userOrders.length > 0 ? "Matching Orders" : "My Order History"}</h3>
              <div className="space-y-4">
                {userOrders.slice(0, 10).map((o: any) => (
-                  <Link href={`/order-tracking?orderId=${o.orderId}`} key={o._id} className="block p-5 bg-white border border-brand-gold/20 rounded-2xl shadow-md hover:shadow-lg hover:border-brand-gold transition-all">
-                     <div className="flex justify-between items-center mb-1">
-                        <p className="font-black text-brand-green text-sm">{o.orderId}</p>
-                        <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-md ${o.status === 'delivered' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
-                           {o.status}
-                        </span>
-                     </div>
-                     <div className="mb-3">
-                        <p className="text-[10px] font-black text-brand-gold uppercase tracking-wider">{o.customer?.name}</p>
-                        <p className="text-xs text-gray-500 font-medium">{new Date(o.createdAt).toLocaleDateString()} • ₹{o.payment?.totalAmount || '0'}</p>
-                     </div>
-                     
-                     <div className="space-y-1.5 mt-3 pt-3 border-t border-gray-100">
-                        {o.items?.map((item: any, i: number) => (
-                           <div key={i} className="flex justify-between text-[11px] text-gray-600">
-                              <span className="font-medium truncate pr-4">{item.quantity}x {item.name}</span>
-                              <span className="font-bold text-gray-400">₹{item.price * item.quantity}</span>
-                           </div>
-                        ))}
-                     </div>
-                  </Link>
+                  <div key={o._id} className="relative group">
+                    <Link href={`/order-tracking?orderId=${o.orderId}`} className="block p-5 bg-white border border-brand-gold/20 rounded-2xl shadow-md hover:shadow-lg hover:border-brand-gold transition-all">
+                       <div className="flex justify-between items-center mb-1">
+                          <p className="font-black text-brand-green text-sm">{o.orderId}</p>
+                          <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-md ${o.status === 'delivered' ? 'bg-green-50 text-green-600' : o.status === 'cancelled' ? 'bg-red-50 text-red-500' : 'bg-amber-50 text-amber-600'}`}>
+                             {o.status}
+                          </span>
+                       </div>
+                       <div className="mb-3">
+                          <p className="text-[10px] font-black text-brand-gold uppercase tracking-wider">{o.customer?.name}</p>
+                          <p className="text-xs text-gray-500 font-medium">{new Date(o.createdAt).toLocaleDateString()} • ₹{o.payment?.totalAmount || '0'}</p>
+                       </div>
+                       
+                       <div className="space-y-1.5 mt-3 pt-3 border-t border-gray-100">
+                          {o.items?.map((item: any, i: number) => (
+                             <div key={i} className="flex justify-between text-[11px] text-gray-600">
+                                <span className="font-medium truncate pr-4">{item.quantity}x {item.name}</span>
+                                <span className="font-bold text-gray-400">₹{item.price * item.quantity}</span>
+                             </div>
+                          ))}
+                       </div>
+                    </Link>
+                    
+                    {o.status === 'pending' && (
+                      <button 
+                         onClick={(e) => {
+                           e.preventDefault();
+                           handleCancelOrder(o._id, o.orderId);
+                         }}
+                         className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg hover:bg-red-600 transition-colors z-20"
+                      >
+                         Cancel
+                      </button>
+                    )}
+                  </div>
                ))}
              </div>
           </div>
