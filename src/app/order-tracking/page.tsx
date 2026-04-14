@@ -18,61 +18,40 @@ function OrderTrackingContent() {
   const [currentOrder, setCurrentOrder] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   
-  // Track specific order if ID provided
-  useEffect(() => {
-    if (orderId) {
-       setLoading(true);
-       fetch("/api/orders", { credentials: "include" }).then(res => res.json()).then(data => {
-         if (!Array.isArray(data)) {
-           console.error("Orders API returned non-array data:", data);
-           setLoading(false);
-           return;
-         }
-         const q = orderId.toLowerCase();
-         const matches = data.filter((o: any) => 
-            o.orderId.toLowerCase() === q ||
-            o.customer?.phone?.includes(q) ||
-            o.customer?.email?.toLowerCase() === q ||
-            o.items?.some((item: any) => item.name.toLowerCase().includes(q))
-         );
-
-         if (matches.length === 1) {
-           setCurrentOrder(matches[0]);
-           const s = matches[0].status || "pending";
-           setStatus(s.charAt(0).toUpperCase() + s.slice(1));
-         } else if (matches.length > 1) {
-           setCurrentOrder(null);
-           setUserOrders(matches);
-         } else {
-           setCurrentOrder(null);
-         }
-         setLoading(false);
-       }).catch(err => {
-         console.error(err);
-         setLoading(false);
-       });
-    }
-  }, [orderId]);
-
-  // Load user data and history if logged in
+  // Unified data loading: Load user data and history once
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user") || "null");
     setUser(userData);
-    if (userData && !orderId) {
-      fetch("/api/orders", { credentials: "include" })
-        .then(res => res.json())
-        .then(data => {
-             if (Array.isArray(data)) {
-               // The backend already filters these by email for security, 
-               // so we can trust the results directly.
-               setUserOrders(data);
-             } else {
-               console.error("User history fetch returned non-array:", data);
+    
+    setLoading(true);
+    fetch("/api/orders", { credentials: "include" })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setUserOrders(data);
+          
+          // If we have an orderId from URL, find it in our loaded data instantly
+          if (orderId) {
+             const q = orderId.toLowerCase();
+             const match = data.find((o: any) => 
+               o.orderId.toLowerCase() === q ||
+               o.customer?.phone?.includes(q) ||
+               o.customer?.email?.toLowerCase() === q
+             );
+             if (match) {
+               setCurrentOrder(match);
+               const s = match.status || "pending";
+               setStatus(s.charAt(0).toUpperCase() + s.slice(1));
              }
-        })
-        .catch(err => console.error(err));
-    }
-  }, []);
+          }
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Fetch Error:", err);
+        setLoading(false);
+      });
+  }, [orderId]);
 
   const handleCancelOrder = async (id: string, orderId: string) => {
     if (!confirm(`Are you sure you want to cancel Order #${orderId}?`)) return;
@@ -118,31 +97,41 @@ function OrderTrackingContent() {
 
   if (!orderId) {
     return (
-      <div className="flex flex-col items-center justify-center p-20 text-center">
-        <AlertCircle size={80} className="text-brand-gold mb-6" />
-        <h2 className="text-2xl font-black text-brand-green mb-4">Search Orders</h2>
-        <p className="text-gray-500 mb-8 max-w-md">Enter your order ID, email, or phone number to track your delicious 9 Nutzz order.</p>
-        <div className="flex bg-white p-2 rounded-2xl shadow-lg w-full max-w-sm border border-brand-gold/10">
-           <input 
-             type="text" 
-             placeholder="Enter Order ID, Phone or Item..." 
-             className="bg-transparent flex-grow px-4 outline-none text-sm" 
-             value={trackingInput}
-             onChange={(e) => setTrackingInput(e.target.value)}
-             onKeyPress={(e) => e.key === 'Enter' && handleTrackSearch()}
-           />
-           <button 
-             onClick={handleTrackSearch}
-             className="px-6 py-3 bg-brand-green text-white font-bold rounded-xl shadow-md"
-           >
-             Track
-           </button>
-        </div>
+        {(!user || userOrders.length === 0) && (
+          <>
+            <AlertCircle size={80} className="text-brand-gold mb-6" />
+            <h2 className="text-2xl font-black text-brand-green mb-4">Search Orders</h2>
+            <p className="text-gray-500 mb-8 max-w-md">Enter your order ID, email, or phone number to track your delicious 9 Nutzz order.</p>
+            <div className="flex bg-white p-2 rounded-2xl shadow-lg w-full max-w-sm border border-brand-gold/10">
+               <input 
+                 type="text" 
+                 placeholder="Enter Order ID, Phone or Item..." 
+                 className="bg-transparent flex-grow px-4 outline-none text-sm" 
+                 value={trackingInput}
+                 onChange={(e) => setTrackingInput(e.target.value)}
+                 onKeyPress={(e) => e.key === 'Enter' && handleTrackSearch()}
+               />
+               <button 
+                 onClick={handleTrackSearch}
+                 className="px-6 py-3 bg-brand-green text-white font-bold rounded-xl shadow-md"
+               >
+                 Track
+               </button>
+            </div>
+          </>
+        )}
+        
+        {user && userOrders.length > 0 && (
+          <div className="w-full text-center mb-8">
+             <h2 className="text-3xl font-black text-brand-green mb-2">My Orders</h2>
+             <p className="text-gray-500 italic text-sm">Welcome back, {user.name}! Here's your order history.</p>
+          </div>
+        )}
         
         
         {userOrders.length > 0 && (
-          <div className="mt-10 text-left w-full max-w-sm">
-             <h3 className="font-bold text-sm text-brand-green uppercase tracking-widest mb-3 text-center">{orderId && userOrders.length > 0 ? "Matching Orders" : "My Order History"}</h3>
+          <div className="mt-4 text-left w-full max-w-sm">
+             <h3 className="font-bold text-[10px] text-brand-gold uppercase tracking-[0.2em] mb-4 text-center">{orderId && userOrders.length > 0 ? "Matching Orders" : "Recent Purchases"}</h3>
              <div className="space-y-4">
                {userOrders.slice(0, 10).map((o: any) => (
                   <div key={o._id} className="relative group">
@@ -204,11 +193,15 @@ function OrderTrackingContent() {
         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/10 rounded-bl-[100px] -z-0" />
         
         <div className="relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12">
             <div>
-              <p className="text-xs font-bold text-brand-gold uppercase tracking-[0.2em] mb-2">Live Tracking</p>
-              <h2 className="text-3xl font-black text-brand-green">Order #{orderId}</h2>
-              <p className="text-sm text-gray-500 mt-1 italic">Order will be delivered as soon as possible</p>
+              <div className="flex items-center space-x-2 mb-2">
+                <Link href="/order-tracking" className="text-brand-gold hover:text-brand-green transition-colors">
+                  <span className="text-[10px] font-bold uppercase tracking-widest">← Back to My Orders</span>
+                </Link>
+              </div>
+              <h2 className="text-3xl font-black text-brand-green">Order Tracking</h2>
+              <p className="text-sm text-gray-500 mt-1 italic">Tracking info for #{orderId}</p>
             </div>
             <div className="bg-emerald-50 px-6 py-4 rounded-2xl border border-emerald-100 flex items-center space-x-4">
               <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center animate-pulse">
