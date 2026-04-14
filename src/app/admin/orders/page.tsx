@@ -396,10 +396,6 @@ function renderExpandedDetails(order: any) {
             <p className="text-sm text-gray-400 italic py-4 text-center">No item details available.</p>
           )}
         </div>
-      </div>
-    </div>
-  );
-}
     </div>
   );
 }
