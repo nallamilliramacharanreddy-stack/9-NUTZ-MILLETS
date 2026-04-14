@@ -105,10 +105,16 @@ export async function PATCH(
         `,
       };
 
-      // 🔥 FIRE AND FORGET (Log the result for Vercel logs)
-      transporter.sendMail(mailOptions)
-        .then(info => console.log('📧 Email sent successfully:', info.messageId))
-        .catch(err => console.error('❌ Email failed delivery:', err.message));
+      // 🔥 RESTORED AWAIT for reliability (but UI has loading state now)
+      try {
+        console.log(`[EMAIL] Attempting to send delivery email to: ${order.customer.email}`);
+        await transporter.sendMail(mailOptions);
+        console.log('📧 Email sent successfully!');
+      } catch (err: any) {
+        console.error('❌ Email failed delivery:', err.message);
+      }
+    } else {
+      console.log(`[EMAIL] Skipping email: Status=${status}, EmailExists=${!!order.customer?.email}`);
     }
 
     return NextResponse.json({ 

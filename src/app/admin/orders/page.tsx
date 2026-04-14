@@ -9,6 +9,7 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -28,21 +29,26 @@ export default function AdminOrders() {
   }, []);
 
   const markAsDelivered = async (id: string) => {
+    if (updatingId) return;
+    setUpdatingId(id);
     try {
       const res = await fetch(`/api/orders/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "delivered" })
       });
+      const data = await res.json();
+      
       if (res.ok) {
-        alert("✅ Delivered Successfully!");
         setOrders(orders.map(o => o._id === id ? { ...o, status: "delivered", payment: { ...o.payment, status: "completed" } } : o));
+        alert("✅ Order Marked as Delivered Successfully!");
       } else {
-        const errData = await res.json().catch(() => ({ message: "Unknown error" }));
-        alert(`❌ Failed: ${errData.message || res.statusText}`);
+        alert(`❌ Failed: ${data.message || "Unknown error"}`);
       }
     } catch (err) {
-      alert("❌ Error communicating with server. Please check your connection.");
+      alert("❌ Error communicating with server. Check your connection.");
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -197,10 +203,15 @@ export default function AdminOrders() {
                             {order.status !== 'delivered' && order.status !== 'cancelled' ? (
                               <button 
                                 onClick={() => markAsDelivered(order._id)}
-                                className="flex items-center space-x-1 px-3 py-2 bg-emerald-500 text-white text-[10px] uppercase tracking-wider font-black rounded-lg hover:shadow-lg hover:bg-emerald-600 transition-all"
+                                disabled={updatingId === order._id}
+                                className="flex items-center space-x-1 px-3 py-2 bg-emerald-500 text-white text-[10px] uppercase tracking-wider font-black rounded-lg hover:shadow-lg hover:bg-emerald-600 transition-all disabled:opacity-50"
                               >
-                                <Check size={14} />
-                                <span>Deliver</span>
+                                {updatingId === order._id ? (
+                                  <Loader2 size={14} className="animate-spin" />
+                                ) : (
+                                  <Check size={14} />
+                                )}
+                                <span>{updatingId === order._id ? "Updating..." : "Deliver"}</span>
                               </button>
                             ) : (
                               <span className="text-xs font-black uppercase tracking-wider text-gray-400 border border-gray-200 px-3 py-1.5 rounded-lg flex items-center space-x-1">
@@ -280,10 +291,15 @@ export default function AdminOrders() {
                        {order.status !== 'delivered' && order.status !== 'cancelled' ? (
                           <button 
                             onClick={() => markAsDelivered(order._id)}
-                            className="flex items-center space-x-1 px-4 py-2 bg-emerald-500 text-white text-[10px] uppercase tracking-wider font-black rounded-xl hover:shadow-lg transition-all"
+                            disabled={updatingId === order._id}
+                            className="flex items-center space-x-1 px-4 py-2 bg-emerald-500 text-white text-[10px] uppercase tracking-wider font-black rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
                           >
-                            <Check size={14} />
-                            <span>Deliver Now</span>
+                            {updatingId === order._id ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <Check size={14} />
+                            )}
+                            <span>{updatingId === order._id ? "Updating..." : "Deliver Now"}</span>
                           </button>
                         ) : (
                           <div className="text-[10px] font-black uppercase tracking-wider text-gray-400 border border-gray-100 px-3 py-2 rounded-xl flex items-center space-x-1">
