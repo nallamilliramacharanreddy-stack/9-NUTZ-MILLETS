@@ -60,18 +60,13 @@ export async function POST(req: Request) {
     }
 
     // ✅ 6. Logic Updates
-    let needsSave = false;
-    
     // Auto verify all users
     if (!user.isVerified) {
       user.isVerified = true;
-      needsSave = true;
     }
 
-    // Reset attempts on successful password match (password check is below)
+    // Password Check
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log(`[AUTH] Password match for ${normalizedEmail}: ${isMatch}`);
-
     if (!isMatch) {
       user.loginAttempts = (user.loginAttempts || 0) + 1;
       if (user.loginAttempts >= 3) {
@@ -80,7 +75,8 @@ export async function POST(req: Request) {
       }
       await user.save();
       
-      await logSecurityEvent({
+      // NON-BLOCKING logging
+      logSecurityEvent({
         event: "LOGIN_FAILURE",
         severity: "WARN",
         ip,
@@ -119,7 +115,8 @@ export async function POST(req: Request) {
     // Final consolidated save
     await user.save();
 
-    await logSecurityEvent({
+    // NON-BLOCKING logging
+    logSecurityEvent({
       event: "LOGIN_SUCCESS",
       severity: "INFO",
       ip,
@@ -139,11 +136,11 @@ export async function POST(req: Request) {
       { status: 200 }
     );
 
-    // ✅ 12. Cookies (SECURE)
+    // ✅ 12. Cookies (RELAXED FOR RELIABILITY)
     res.cookies.set("accessToken", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax", // Changed from strict for better compatibility
       path: "/",
       maxAge: 4 * 60 * 60, // 4 hours
     });
@@ -151,7 +148,7 @@ export async function POST(req: Request) {
     res.cookies.set("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax", // Changed from strict for better compatibility
       path: "/api/auth/refresh-token",
       maxAge: 7 * 24 * 60 * 60, // 7 days
     });

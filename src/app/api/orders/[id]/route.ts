@@ -14,12 +14,21 @@ export async function PATCH(
     const { id } = await params;
     
     // Authorization Check
-    const token = req.cookies.get('accessToken')?.value;
+    const tokenCookie = req.cookies.get('accessToken');
+    const token = tokenCookie?.value;
     const decoded = token ? verifyAccessToken(token) : null;
 
-    if (!decoded || decoded.role !== 'admin') {
+    if (!decoded) {
+      console.warn(`[AUTH] Failed: ${token ? 'Invalid/Expired Token' : 'Missing Token'}`);
+      return securityResponse(`Forbidden: ${token ? 'Session expired. Please log in again.' : 'Authentication required.'}`, 403);
+    }
+
+    if (decoded.role?.toLowerCase() !== 'admin') {
+      console.warn(`[AUTH] Forbidden: User ${decoded.email} has role ${decoded.role}, expected admin`);
       return securityResponse('Forbidden: Admin access only', 403);
     }
+
+    console.log(`[AUTH] Success: Admin ${decoded.email} authorized for order ${id}`);
 
     const body = await req.json();
     const { status } = body;
