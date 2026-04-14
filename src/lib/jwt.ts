@@ -16,7 +16,7 @@ export const signAccessToken = (user: UserToken): string => {
   return jwt.sign(
     { id: user.id, name: user.name, email: user.email, role: user.role },
     JWT_SECRET,
-    { expiresIn: '15m' }
+    { expiresIn: '4h' }
   );
 };
 
