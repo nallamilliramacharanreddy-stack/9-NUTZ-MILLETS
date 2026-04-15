@@ -1,6 +1,4 @@
-"use client";
-
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, Star, ChevronRight, Package, Truck, CheckCircle, 
@@ -13,6 +11,7 @@ import { Suspense, useState, useEffect } from "react";
 
 function OrderTrackingContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const orderId = searchParams.get("orderId");
   
   const [status, setStatus] = useState<string>("Pending");
@@ -30,7 +29,11 @@ function OrderTrackingContent() {
     setLoading(true);
     setError(null);
     fetch("/api/orders", { credentials: "include" })
-      .then(res => res.json())
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to fetch orders");
+        return data;
+      })
       .then(data => {
         if (Array.isArray(data)) {
           setUserOrders(data);
@@ -50,19 +53,21 @@ function OrderTrackingContent() {
                setError("Order not found. Please check the ID or try searching with your phone number.");
              }
           }
+        } else {
+          setUserOrders([]);
         }
         setLoading(false);
       })
       .catch(err => {
         console.error("Fetch Error:", err);
         setLoading(false);
-        setError("Something went wrong while fetching your orders.");
+        setError(err.message || "Something went wrong while fetching your orders.");
       });
   }, [orderId]);
 
   const handleTrackSearch = () => {
     if (trackingInput.trim()) {
-      window.location.href = `/order-tracking?orderId=${trackingInput.trim()}`;
+      router.push(`/order-tracking?orderId=${trackingInput.trim()}`);
     }
   };
 
@@ -376,7 +381,7 @@ function OrderTrackingContent() {
 
 export default function OrderTrackingPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-28 md:pt-36">
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-bold text-brand-green animate-pulse">Loading tracking details...</div>}>
          <OrderTrackingContent />
       </Suspense>
