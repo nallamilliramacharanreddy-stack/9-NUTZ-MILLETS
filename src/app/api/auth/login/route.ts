@@ -61,19 +61,20 @@ export async function POST(req: Request) {
 
     // ✅ 6. Logic Updates
     // Auto verify all users
-    if (!user.isVerified) {
-      user.isVerified = true;
-    }
+    let isVerifiedUpdate = user.isVerified ? {} : { isVerified: true };
 
     // Password Check
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      user.loginAttempts = (user.loginAttempts || 0) + 1;
-      if (user.loginAttempts >= 3) {
-        user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
-        user.loginAttempts = 0;
+      let newAttempts = (user.loginAttempts || 0) + 1;
+      let updatePayload: any = { $set: { loginAttempts: newAttempts } };
+      
+      if (newAttempts >= 3) {
+        updatePayload.$set.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
+        updatePayload.$set.loginAttempts = 0;
       }
-      await user.save({ validateBeforeSave: false });
+      
+      await User.updateOne({ _id: user._id }, updatePayload);
       
       // NON-BLOCKING logging
       logSecurityEvent({
@@ -86,9 +87,6 @@ export async function POST(req: Request) {
     }
 
     // Successful Login Path
-    user.loginAttempts = 0;
-    user.lockUntil = undefined;
-
     // Generate Tokens
     const accessToken = signAccessToken({
       id: user._id.toString(),
@@ -102,18 +100,29 @@ export async function POST(req: Request) {
     });
 
     const hashedRT = hashToken(refreshToken);
-    user.refreshTokens = user.refreshTokens || [];
-    if (user.refreshTokens.length >= 5) {
-      user.refreshTokens.shift();
-    }
-    user.refreshTokens.push({
+    const newRT = {
       token: hashedRT,
       deviceId: req.headers.get("user-agent") || "unknown",
       createdAt: new Date(),
-    });
+    };
 
-    // Final consolidated save
-    await user.save({ validateBeforeSave: false });
+    // Final consolidated save using updateOne
+    await User.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          ...isVerifiedUpdate,
+          loginAttempts: 0,
+        },
+        $unset: { lockUntil: 1 },
+        $push: {
+          refreshTokens: {
+            $each: [newRT],
+            $slice: -5
+          }
+        }
+      }
+    );
 
     // NON-BLOCKING logging
     logSecurityEvent({
