@@ -195,12 +195,20 @@ export async function DELETE(
   try {
     const { id } = await params;
     
-    // Auth Consistency Fix
+    // Auth Consistency Fix (matching PATCH route)
     const cookieStore = await cookies();
-    const token = cookieStore.get('accessToken')?.value || req.headers.get('authorization')?.split(' ')[1];
+    const tokenCookie = cookieStore.get('accessToken');
+    const authHeader = req.headers.get('authorization');
+    
+    let token = tokenCookie?.value;
+    if (!token && authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+
     const decoded = token ? verifyAccessToken(token) : null;
 
     if (!decoded || decoded.role?.toLowerCase() !== 'admin') {
+      console.warn(`[AUTH] Unauthorized DELETE attempt for order ${id} by ${decoded?.email || 'Unknown'}`);
       return securityResponse('Forbidden: Admin access only', 403);
     }
 
@@ -211,10 +219,15 @@ export async function DELETE(
       return NextResponse.json({ message: 'Order not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ message: 'Order deleted successfully' }, { status: 200 });
+    console.log(`✅ Order ${id} (ID: ${order.orderId}) deleted successfully by Admin ${decoded.email}`);
+
+    return NextResponse.json({ 
+      message: 'Order deleted successfully',
+      orderId: order.orderId 
+    }, { status: 200 });
 
   } catch (error: any) {
-    console.error('Order Deletion API Error:', error.message);
+    console.error('CRITICAL: Order Deletion API Error:', error.message);
     return securityResponse('Internal Server Error', 500);
   }
 }

@@ -34,8 +34,8 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const [productsRes, ordersRes] = await Promise.all([
-        fetch("/api/products"),
-        fetch("/api/orders")
+        fetch("/api/products", { cache: "no-store" }),
+        fetch("/api/orders", { cache: "no-store" })
       ]);
       
       const products = await productsRes.json();
