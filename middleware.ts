@@ -77,10 +77,17 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
-      // Decode token to check role
+      // Decode token to check role (Base64URL safe decoding for Edge Runtime)
       const payloadBase64 = token.split('.')[1];
-      const payload = JSON.parse(atob(payloadBase64));
+      if (!payloadBase64) throw new Error("Invalid token format");
       
+      const base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = base64.length % 4;
+      const padded = pad ? base64 + '='.repeat(4 - pad) : base64;
+      const payload = JSON.parse(atob(padded));
+      
+      console.log(`[AUTH-DEBUG] Path: ${pathname}, UserRole: ${payload.role}`);
+
       if (payload.role !== 'admin') {
         if (pathname.startsWith('/api/')) {
           return new NextResponse(
@@ -91,6 +98,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/', request.url));
       }
     } catch (e) {
+      console.error("[AUTH-ERROR] Middleware decoding failed:", e);
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
