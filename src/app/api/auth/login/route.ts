@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
     // ✅ 5. Find User
     console.log(`[AUTH] Login attempt for: ${normalizedEmail}`);
-    const user = await User.findOne({ email: normalizedEmail });
+    const user = await User.findOne({ email: { $regex: new RegExp(`^${normalizedEmail}$`, 'i') } });
 
     if (!user) {
       console.log(`[AUTH] Login FAILED: User not found for ${normalizedEmail}`);
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
         user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
         user.loginAttempts = 0;
       }
-      await user.save();
+      await user.save({ validateBeforeSave: false });
       
       // NON-BLOCKING logging
       logSecurityEvent({
@@ -113,7 +113,7 @@ export async function POST(req: Request) {
     });
 
     // Final consolidated save
-    await user.save();
+    await user.save({ validateBeforeSave: false });
 
     // NON-BLOCKING logging
     logSecurityEvent({

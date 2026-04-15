@@ -57,11 +57,11 @@ const directOrderSchema = new Schema<IDirectOrder>(
       razorpayOrderId: { type: String },
       razorpayPaymentId: { type: String },
     },
-    status: { 
-      type: String, 
-      required: true, 
-      default: 'pending', 
-      enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] 
+    status: {
+      type: String,
+      required: true,
+      default: 'pending',
+      enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
     },
   },
   { timestamps: true }

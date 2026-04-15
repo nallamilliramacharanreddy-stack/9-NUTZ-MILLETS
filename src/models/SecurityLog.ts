@@ -8,15 +8,14 @@ export interface ISecurityLog {
   metadata?: any;
   createdAt: Date;
 }
-
 const securityLogSchema = new Schema<ISecurityLog>(
   {
     event: { type: String, required: true },
-    severity: { 
-      type: String, 
-      required: true, 
+    severity: {
+      type: String,
+      required: true,
       enum: ['INFO', 'WARN', 'CRITICAL'],
-      default: 'INFO' 
+      default: 'INFO'
     },
     ip: { type: String, required: true },
     userId: { type: String },
