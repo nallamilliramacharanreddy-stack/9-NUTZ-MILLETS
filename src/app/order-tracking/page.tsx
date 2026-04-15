@@ -129,10 +129,11 @@ function OrderTrackingContent() {
           </div>
         )}
         
-        
         {userOrders.length > 0 && (
           <div className="mt-4 text-left w-full max-w-sm">
-             <h3 className="font-bold text-[10px] text-brand-gold uppercase tracking-[0.2em] mb-4 text-center">{orderId && userOrders.length > 0 ? "Matching Orders" : "Recent Purchases"}</h3>
+             <h3 className="font-bold text-[10px] text-brand-gold uppercase tracking-[0.2em] mb-4 text-center">
+               {userOrders.length > 0 ? "Recent Purchases" : "No Orders Found"}
+             </h3>
              <div className="space-y-4">
                {userOrders.slice(0, 10).map((o: any) => (
                   <div key={o._id} className="relative group">
