@@ -112,11 +112,10 @@ function OrderTrackingContent() {
     }
   };
 
-  const currentStepIndex = status === "Delivered" ? 2 : status === "Processing" || status === "Shipped" ? 1 : 0;
+  const currentStepIndex = status === "Delivered" ? 1 : 0;
   
   const steps = [
-    { name: "Order Confirmed", date: currentOrder ? new Date(currentOrder.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : "" },
-    { name: "Shipped", date: "" },
+    { name: "Ordered", date: currentOrder ? new Date(currentOrder.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : "" },
     { name: "Delivered", date: status === "Delivered" ? "Today" : "" },
   ];
 
@@ -257,14 +256,6 @@ function OrderTrackingContent() {
                     <h1 className="text-lg font-bold text-gray-800 mb-1">Order Details for #{orderId}</h1>
                     <p className="text-xs text-gray-400 font-medium">Tracking can be done via Order Details Section.</p>
                  </div>
-                 <button 
-                    className="flex items-center space-x-2 text-sm font-bold text-gray-700 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
-                    onClick={() => alert("Chat feature coming soon!")}
-                 >
-                    <MessageSquare size={16} />
-                    <span>Manage who can access</span>
-                    <ChevronRight size={14} />
-                 </button>
               </div>
 
               {/* Status & Timeline */}
@@ -318,7 +309,7 @@ function OrderTrackingContent() {
                                           {step.date && <p className="text-xs text-brand-gold font-bold">{step.date}</p>}
                                        </div>
                                        {isActive && isCurrent && (
-                                          <p className="text-[11px] text-gray-400 font-medium italic">Your item has been {idx === 0 ? "confirmed" : idx === 1 ? "shipped" : "delivered"}.</p>
+                                          <p className="text-[11px] text-gray-400 font-medium italic">Your item has been {idx === 0 ? "ordered" : "delivered"}.</p>
                                        )}
                                     </div>
                                  </div>
@@ -326,19 +317,9 @@ function OrderTrackingContent() {
                            })}
                         </div>
                         
-                        <div className="mt-12 flex items-center text-blue-600 font-bold text-sm cursor-pointer hover:underline">
-                           <span>See All Updates</span>
-                           <ChevronRight size={14} className="ml-1" />
-                        </div>
                     </div>
                  </div>
                  
-                 <div className="mt-10 pt-6 border-t border-gray-50 text-center">
-                    <button className="flex items-center mx-auto space-x-2 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
-                       <MessageSquare size={18} />
-                       <span>Chat with us</span>
-                    </button>
-                 </div>
               </div>
             </div>
 
@@ -406,13 +387,6 @@ function OrderTrackingContent() {
                         <span className="text-xs font-black text-brand-green uppercase tracking-widest">{currentOrder?.payment?.method || "Cash On Delivery"}</span>
                      </div>
 
-                     <button 
-                        className="w-full mt-6 flex items-center justify-center space-x-2 py-3 bg-white border border-gray-200 rounded-lg font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-                        onClick={() => alert("Invoice generation feature coming soon!")}
-                     >
-                        <Download size={18} />
-                        <span>Download Invoice</span>
-                     </button>
                   </div>
                </div>
             </div>

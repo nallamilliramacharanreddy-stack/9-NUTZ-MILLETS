@@ -26,28 +26,35 @@ export default function Navbar() {
     };
     window.addEventListener("scroll", handleScroll);
 
-    const updateHeader = () => {
-      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-      setCartCount(cart.reduce((acc: number, item: any) => acc + item.quantity, 0));
+    const updateUI = () => {
+      try {
+        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+        setCartCount(cart.reduce((acc: number, item: any) => acc + item.quantity, 0));
 
-      const userData = JSON.parse(localStorage.getItem("user") || "null");
-      setUser(userData);
-      
-      // Attempt silent refresh if user exists
-      if (userData) {
-        fetch("/api/auth/refresh-token", { method: "POST" }).catch(() => {
-          // If refresh fails, session is likely expired
-           console.warn("Silent refresh failed");
-        });
+        const userData = JSON.parse(localStorage.getItem("user") || "null");
+        setUser(userData);
+      } catch (err) {
+        console.error("Value parsing error", err);
       }
     };
 
-    updateHeader();
-    window.addEventListener("storage", updateHeader);
+    // 1. Initial UI setup
+    updateUI();
+    
+    // 2. Listen for storage changes
+    window.addEventListener("storage", updateUI);
+
+    // 3. ONE-TIME Silent Refresh on mount (Throttled)
+    const userData = JSON.parse(localStorage.getItem("user") || "null");
+    if (userData) {
+      fetch("/api/auth/refresh-token", { method: "POST" }).catch(() => {
+         console.warn("Silent refresh failed");
+      });
+    }
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("storage", updateHeader);
+      window.removeEventListener("storage", updateUI);
     };
   }, []);
 
