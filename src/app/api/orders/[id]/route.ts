@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import DirectOrder from '@/models/Order';
+import Product from '@/models/Product';
 import { verifyAccessToken } from '@/lib/jwt';
 import { securityResponse } from '@/lib/security';
 import nodemailer from 'nodemailer';
@@ -69,6 +70,26 @@ export async function PATCH(
     const allowedStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
     if (!allowedStatuses.includes(status)) {
       return NextResponse.json({ message: 'Invalid status' }, { status: 400 });
+    }
+
+    // ✅ NEW: Automatic Stock Restoration on Cancellation
+    const previousStatus = order.status;
+    if (status === 'cancelled' && previousStatus !== 'cancelled') {
+        try {
+            console.log(`[STOCK] Restoring stock for cancelled order ${id}...`);
+            const stockRestoration = order.items.map((item: any) => {
+                return Product.findOneAndUpdate(
+                    { _id: item.id },
+                    { $inc: { stock: Math.abs(item.quantity) } },
+                    { new: true }
+                );
+            });
+            const updatedProducts = await Promise.all(stockRestoration);
+            console.log(`✅ Restored stock for ${updatedProducts.length} items from Order ${order.orderId}`);
+        } catch (stockError: any) {
+            console.error(`CRITICAL: Stock restoration failed for order ${order.orderId}:`, stockError.message);
+            // We continue with status update even if stock fails, but log it locally.
+        }
     }
 
 
@@ -152,8 +173,13 @@ export async function PATCH(
         const mailOptions = {
           from: `"9 Nutzz Millets" <${process.env.EMAIL_USER}>`,
           to: order.customer.email,
-          subject: "🎉 Your 9 Nutzz treats have been delivered!",
-          html: premiumThankYou ? premiumHtml : basicHtml,
+          subject: `🎉 Order #${order.orderId} Delivered - 9 Nutzz Millets`,
+          html: (premiumThankYou ? premiumHtml : basicHtml) + `
+            <!-- Unique ID to prevent Gmail Trimming: ${order.orderId}-${Date.now()} -->
+            <div style="display:none; font-size:1px; line-height:1px; max-height:0px; max-width:0px; opacity:0; overflow:hidden;">
+              Unique Transaction Notification ID: ${order._id}-${Date.now()}
+            </div>
+          `,
         };
 
         // ✅ Send directly and wait for result (Synchronous for reliability)
