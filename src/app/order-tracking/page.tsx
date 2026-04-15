@@ -49,6 +49,7 @@ function OrderTrackingContent() {
   const [trackingInput, setTrackingInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   // 1. Fetch User Orders on mount
   useEffect(() => {
@@ -109,6 +110,37 @@ function OrderTrackingContent() {
   const handleTrackSearch = () => {
     if (trackingInput.trim()) {
       router.push(`/order-tracking?orderId=${trackingInput.trim()}`);
+    }
+  };
+  
+  const handleCancelOrder = async (e: React.MouseEvent, id: string, name: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!confirm(`Are you sure you want to cancel your order for ${name}?`)) return;
+
+    setCancellingId(id);
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ status: "cancelled" })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("✅ Order cancelled successfully.");
+        // Refresh local state
+        setUserOrders(prev => prev.map(o => o._id === id ? { ...o, status: 'cancelled' } : o));
+      } else {
+        alert(`❌ Failed to cancel: ${data.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Cancel Error:", err);
+      alert("❌ A server error occurred. Please try again.");
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -194,9 +226,22 @@ function OrderTrackingContent() {
                           </p>
                         </div>
                         
-                        <div className="mt-4 sm:mt-0 flex items-center text-blue-600 font-bold text-sm hover:underline">
-                          <Star size={14} className="mr-2" />
-                          Rate & Review Product
+                        <div className="mt-4 sm:mt-0 flex items-center">
+                          {o.status === 'pending' ? (
+                            <button
+                              onClick={(e) => handleCancelOrder(e, o._id, o.items?.[0]?.name || "this order")}
+                              disabled={cancellingId === o._id}
+                              className="text-red-500 font-bold text-xs hover:bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 transition-colors disabled:opacity-50"
+                            >
+                              {cancellingId === o._id ? "Cancelling..." : "Cancel Order"}
+                            </button>
+                          ) : o.status === 'cancelled' ? (
+                            <span className="text-gray-400 text-xs font-bold uppercase tracking-widest px-3 py-1.5 bg-gray-100 rounded-lg">Order Cancelled</span>
+                          ) : (
+                             <div className="text-gray-400 font-bold text-xs italic">
+                               Shipment In Progress
+                             </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -252,9 +297,20 @@ function OrderTrackingContent() {
             <div className="lg:col-span-8 space-y-4">
               {/* Order Info Bar */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-wrap justify-between items-center gap-4">
-                 <div>
-                    <h1 className="text-lg font-bold text-gray-800 mb-1">Order Details for #{orderId}</h1>
-                    <p className="text-xs text-gray-400 font-medium">Tracking can be done via Order Details Section.</p>
+                 <div className="flex items-center justify-between w-full">
+                    <div>
+                      <h1 className="text-lg font-bold text-gray-800 mb-1">Order Details for #{orderId}</h1>
+                      <p className="text-xs text-gray-400 font-medium tracking-tight">Status: <span className={`font-black uppercase ${currentOrder?.status === 'cancelled' ? 'text-red-500' : 'text-brand-green'}`}>{currentOrder?.status}</span></p>
+                    </div>
+                    {currentOrder?.status === 'pending' && (
+                       <button
+                         onClick={(e) => handleCancelOrder(e, currentOrder._id, currentOrder.items?.[0]?.name || "this order")}
+                         disabled={cancellingId === currentOrder._id}
+                         className="px-6 py-2.5 bg-red-50 text-red-500 font-black text-[10px] uppercase tracking-widest rounded-xl border border-red-100 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
+                       >
+                         {cancellingId === currentOrder._id ? "Processing..." : "Cancel Order"}
+                       </button>
+                    )}
                  </div>
               </div>
 
