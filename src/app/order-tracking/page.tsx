@@ -1,69 +1,110 @@
+"use client";
+
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Search, Star, ChevronRight, Package, Truck, CheckCircle, 
-  MapPin, Clock, MessageSquare, Download, AlertCircle, RefreshCcw,
-  ArrowLeft, CreditCard, Info
+  Search, Star, ChevronRight, Package, 
+  MapPin, MessageSquare, Download, AlertCircle, RefreshCcw,
+  CreditCard, Info
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import Footer from "@/components/Footer";
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useMemo } from "react";
+
+interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+}
+
+interface Order {
+  _id: string;
+  orderId: string;
+  customer: {
+    name: string;
+    phone: string;
+    email: string;
+    address: string;
+    pincode: string;
+  };
+  items: OrderItem[];
+  payment: {
+    method: string;
+    status: string;
+    totalAmount: number;
+    surcharge?: number;
+  };
+  status: string;
+  createdAt: string;
+}
 
 function OrderTrackingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = searchParams.get("orderId");
   
-  const [status, setStatus] = useState<string>("Pending");
-  const [user, setUser] = useState<any>(null);
-  const [userOrders, setUserOrders] = useState<any[]>([]);
+  const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [trackingInput, setTrackingInput] = useState("");
-  const [currentOrder, setCurrentOrder] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 1. Fetch User Orders on mount
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("user") || "null");
-    setUser(userData);
+    let isMounted = true;
     
-    setLoading(true);
-    setError(null);
     fetch("/api/orders", { credentials: "include" })
       .then(async res => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Failed to fetch orders");
-        return data;
+        return data as Order[];
       })
       .then(data => {
-        if (Array.isArray(data)) {
-          setUserOrders(data);
-          
-          if (orderId) {
-             const q = orderId.toLowerCase();
-             const match = data.find((o: any) => 
-               o.orderId.toLowerCase() === q ||
-               o.customer?.phone?.includes(q) ||
-               o.customer?.email?.toLowerCase() === q
-             );
-             if (match) {
-               setCurrentOrder(match);
-               const s = match.status || "pending";
-               setStatus(s.charAt(0).toUpperCase() + s.slice(1));
-             } else {
-               setError("Order not found. Please check the ID or try searching with your phone number.");
-             }
-          }
-        } else {
-          setUserOrders([]);
+        if (isMounted) {
+          setUserOrders(Array.isArray(data) ? data : []);
         }
-        setLoading(false);
       })
       .catch(err => {
-        console.error("Fetch Error:", err);
-        setLoading(false);
-        setError(err.message || "Something went wrong while fetching your orders.");
+        if (isMounted) {
+          console.error("Fetch Error:", err);
+          setError(err.message || "Something went wrong while fetching your orders.");
+        }
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
       });
-  }, [orderId]);
+
+    return () => { isMounted = false; };
+  }, []);
+
+  // 2. Derive currentOrder and status using useMemo to satisfy linter
+  const { currentOrder, status, searchError } = useMemo(() => {
+    if (!orderId) return { currentOrder: null, status: "Pending", searchError: null };
+    
+    const q = orderId.toLowerCase();
+    const match = userOrders.find((o: Order) => 
+      o.orderId.toLowerCase() === q ||
+      o.customer?.phone?.includes(q) ||
+      o.customer?.email?.toLowerCase() === q
+    );
+
+    if (match) {
+      const s = match.status || "pending";
+      return { 
+        currentOrder: match, 
+        status: s.charAt(0).toUpperCase() + s.slice(1), 
+        searchError: null 
+      };
+    }
+
+    // Only show "Order not found" if we've actually loaded orders
+    return { 
+      currentOrder: null, 
+      status: "Pending", 
+      searchError: !loading ? "Order not found. Please check the ID or try searching with your phone number." : null 
+    };
+  }, [orderId, userOrders, loading]);
 
   const handleTrackSearch = () => {
     if (trackingInput.trim()) {
@@ -79,7 +120,9 @@ function OrderTrackingContent() {
     { name: "Delivered", date: status === "Delivered" ? "Today" : "" },
   ];
 
-  if (loading) {
+  const displayError = error || searchError;
+
+  if (loading && userOrders.length === 0) {
      return (
        <div className="py-32 flex flex-col items-center justify-center bg-gray-50 min-h-screen">
          <RefreshCcw className="animate-spin text-brand-gold mb-4" size={40} />
@@ -113,7 +156,7 @@ function OrderTrackingContent() {
 
           <div className="space-y-4">
             {userOrders.length > 0 ? (
-              userOrders.map((o: any) => (
+              userOrders.map((o: Order) => (
                 <Link 
                   key={o._id} 
                   href={`/order-tracking?orderId=${o.orderId}`}
@@ -121,11 +164,12 @@ function OrderTrackingContent() {
                 >
                   <div className="flex flex-col md:flex-row gap-6">
                     {/* Item Images - Show first item or product preview */}
-                    <div className="w-24 h-24 bg-gray-50 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-100">
-                      <img 
+                    <div className="w-24 h-24 bg-gray-50 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-100 relative">
+                      <Image 
                         src={o.items?.[0]?.image || "/placeholder.png"} 
                         alt={o.items?.[0]?.name} 
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     </div>
 
@@ -164,7 +208,7 @@ function OrderTrackingContent() {
               <div className="text-center py-20">
                 <Package size={60} className="mx-auto text-gray-300 mb-4" />
                 <h3 className="text-xl font-bold text-gray-500">No orders found</h3>
-                <p className="text-gray-400">You haven't placed any orders yet. Start your shopping journey today!</p>
+                <p className="text-gray-400">You haven&apos;t placed any orders yet. Start your shopping journey today!</p>
                 <Link href="/shop" className="inline-block mt-6 px-8 py-3 bg-brand-green text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all">
                    Shop Now
                 </Link>
@@ -184,24 +228,24 @@ function OrderTrackingContent() {
         <div className="flex items-center text-[11px] text-gray-400 font-medium mb-8 space-x-2">
            <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
            <ChevronRight size={10} />
-           <Link href="/profile" className="hover:text-blue-600 transition-colors">My Account</Link>
+           <Link href="/admin" className="hover:text-blue-600 transition-colors">My Account</Link>
            <ChevronRight size={10} />
            <Link href="/order-tracking" className="hover:text-blue-600 transition-colors">My Orders</Link>
            <ChevronRight size={10} />
            <span className="text-gray-600 font-bold">{orderId}</span>
         </div>
 
-        {error ? (
+        {displayError ? (
           <div className="bg-white p-12 rounded-xl shadow-sm text-center border border-red-100 max-w-2xl mx-auto">
              <AlertCircle size={60} className="mx-auto text-red-500 mb-4" />
              <h2 className="text-2xl font-black text-gray-800 mb-2">Order Not Found</h2>
-             <p className="text-gray-500 mb-8">{error}</p>
-             <button 
-                onClick={() => window.location.href = '/order-tracking'}
-                className="px-8 py-3 bg-brand-green text-white font-bold rounded-lg"
+             <p className="text-gray-500 mb-8">{displayError}</p>
+             <Link 
+                href="/order-tracking"
+                className="inline-block px-8 py-3 bg-brand-green text-white font-bold rounded-lg"
              >
                 Go to My Orders
-             </button>
+             </Link>
           </div>
         ) : (
           <div className="grid lg:grid-cols-12 gap-6">
@@ -228,16 +272,17 @@ function OrderTrackingContent() {
                  <div className="flex flex-col md:flex-row gap-12">
                     {/* Item Snapshot */}
                     <div className="flex gap-4 min-w-[300px]">
-                       <div className="w-20 h-20 bg-gray-50 rounded-lg flex-shrink-0 flex items-center justify-center border border-gray-100 overflow-hidden">
-                          <img 
+                       <div className="w-20 h-20 bg-gray-50 rounded-lg flex-shrink-0 flex items-center justify-center border border-gray-100 overflow-hidden relative">
+                          <Image 
                             src={currentOrder?.items?.[0]?.image || "/placeholder.png"} 
-                            alt={currentOrder?.items?.[0]?.name}
-                            className="w-full h-full object-cover" 
+                            alt={currentOrder?.items?.[0]?.name || "Product"}
+                            fill
+                            className="object-cover" 
                           />
                        </div>
                        <div>
                           <h3 className="font-bold text-sm text-gray-800 line-clamp-2 leading-tight mb-2">
-                             {currentOrder?.items?.[0]?.name} {currentOrder?.items?.length > 1 && `+ ${currentOrder.items.length - 1} more items`}
+                             {currentOrder?.items?.[0]?.name} {currentOrder?.items && currentOrder.items.length > 1 && `+ ${currentOrder.items.length - 1} more items`}
                           </h3>
                           <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-2">Seller: 9 Nutzz Millets</p>
                           <p className="font-extrabold text-lg text-gray-900">₹{currentOrder?.payment?.totalAmount}</p>
@@ -257,7 +302,6 @@ function OrderTrackingContent() {
 
                            {steps.map((step, idx) => {
                               const isActive = idx <= currentStepIndex;
-                              const isLast = idx === steps.length - 1;
                               const isCurrent = idx === currentStepIndex;
 
                               return (
