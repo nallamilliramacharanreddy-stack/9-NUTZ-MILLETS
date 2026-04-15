@@ -180,7 +180,7 @@ export async function POST(req: Request) {
           ? "Database connection failed. Please check your network or MongoDB Atlas settings (IP Whitelist)."
           : error.message?.toLowerCase().includes("auth") || error.message?.toLowerCase().includes("authentication")
           ? "Database Authentication Failed. Please verify your MongoDB URI username and password."
-          : "Server error",
+          : `Server Error: ${error?.message || 'Unknown error'}`,
         error:
           process.env.NODE_ENV === "development"
             ? error.message
