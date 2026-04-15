@@ -48,9 +48,9 @@ export async function middleware(request: NextRequest) {
     // In production, ensure origin matches host
     if (process.env.NODE_ENV === 'production') {
       if (!origin || !origin.includes(host || '')) {
-         console.warn(`[CSRF] Blocked: Origin ${origin} does not match Host ${host}`);
+         console.warn(`[CSRF-BLOCKED] Path: ${pathname}, Origin: ${origin}, Host: ${host}`);
          return new NextResponse(
-           JSON.stringify({ message: 'CSRF Protection: Invalid Origin' }),
+           JSON.stringify({ message: `CSRF Protection: Invalid Origin (${origin || 'none'})` }),
            { status: 403, headers: { 'Content-Type': 'application/json' } }
          );
       }

@@ -23,7 +23,8 @@ export default function AdminDashboard() {
         // Also refresh stats to be safe
         fetchDashboardData();
       } else {
-        alert("Failed to delete order. Please check permissions.");
+        const data = await res.json().catch(() => ({ message: "Failed to delete order" }));
+        alert(data.message || "Failed to delete order. Please check permissions.");
       }
     } catch (err) {
       console.error("Delete failed", err);
