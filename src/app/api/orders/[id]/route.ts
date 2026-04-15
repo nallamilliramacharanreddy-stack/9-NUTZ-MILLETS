@@ -147,7 +147,7 @@ export async function PATCH(
               <div style="text-align: center; margin-top: 30px; padding: 20px; border-top: 1px dashed #ddd;">
                 <h3 style="color: #1a5d1a; margin-top: 0;">Thank You for Choosing 9 Nutzz!</h3>
                 <p style="font-size: 14px; color: #666;">We'd love to hear your feedback. Feel free to reply to this email or visit our shop again!</p>
-                <a href="${process.env.NEXT_PUBLIC_URL || 'https://9-nutzz-millets.vercel.app'}/shop" 
+                <a href="${process.env.NEXT_PUBLIC_URL || 'https://9-nutzz-millets.vercel.app'}/" 
                    style="background: #c0911b; color: white; padding: 14px 30px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block; margin-top: 15px; box-shadow: 0 4px 10px rgba(192, 145, 27, 0.3);">
                   Shop More Millets
                 </a>
