@@ -138,7 +138,7 @@ async function seed() {
       const slug = p.name.toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
-      
+
       return {
         ...p,
         slug,
@@ -152,11 +152,11 @@ async function seed() {
     });
 
     console.log(`Seeding ${formattedProducts.length} products...`);
-    
+
     // Using insertMany for efficiency
     // We use upsert logic if we want to avoid duplicates if rerun, but here we just insert
     // To handle potential duplicates in the script itself, we'll check slubs
-    
+
     for (const prod of formattedProducts) {
       await Product.findOneAndUpdate(
         { slug: prod.slug },

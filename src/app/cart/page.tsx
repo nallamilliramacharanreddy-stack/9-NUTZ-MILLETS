@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trash2, Plus, Minus, ArrowLeft, Loader2 } from "lucide-react";
 import Footer from "@/components/Footer";
 
 export default function CartPage() {
+  const router = useRouter();
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,6 +42,14 @@ export default function CartPage() {
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const shipping = 0; // Delivery is now free for all orders
   const total = subtotal + shipping;
+
+  const handleCheckoutClick = (e: React.MouseEvent) => {
+    const userData = JSON.parse(localStorage.getItem("user") || "null");
+    if (!userData) {
+      e.preventDefault();
+      router.push("/login?redirect=/checkout");
+    }
+  };
 
   if (loading) {
     return (
@@ -148,6 +158,7 @@ export default function CartPage() {
 
                 <Link 
                   href="/checkout"
+                  onClick={handleCheckoutClick}
                   className="w-full py-4 bg-brand-green text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2 text-lg"
                 >
                   <span>Proceed to Delivery</span>

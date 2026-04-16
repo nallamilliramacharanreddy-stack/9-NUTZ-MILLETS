@@ -225,6 +225,19 @@ export default function ProductDetail() {
     }
   };
 
+  const handleBuyNowClick = () => {
+    if (isOutOfStock) return;
+    
+    // Check if user is logged in
+    const userData = JSON.parse(localStorage.getItem("user") || "null");
+    if (!userData) {
+      router.push(`/login?redirect=/product/${slug}`);
+      return;
+    }
+    
+    setShowCheckout(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center space-y-4">
@@ -312,7 +325,7 @@ export default function ProductDetail() {
                </div>
                             <div className="flex flex-col sm:flex-row gap-4 w-full">
                   <button 
-                    onClick={() => !isOutOfStock && setShowCheckout(true)}
+                    onClick={handleBuyNowClick}
                     disabled={isOutOfStock}
                     className="flex-grow py-4 px-6 font-black rounded-2xl shadow-xl transition-all flex items-center justify-center space-x-2 uppercase tracking-widest text-sm bg-brand-gold text-white disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none hover:scale-[1.02] active:scale-[0.98]"
                   >

@@ -54,6 +54,15 @@ export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
 
   try {
+    // ✅ Auth Check
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value || req.headers.get('authorization')?.split(' ')[1];
+    const decoded = token ? verifyAccessToken(token) : null;
+
+    if (!decoded) {
+      return securityResponse('Unauthorized - Please login to place an order', 401);
+    }
+
     // ✅ Rate limit (optional but recommended)
     if (!rateLimit(ip, 50, 60 * 1000)) {
       return securityResponse('Too many requests', 429);

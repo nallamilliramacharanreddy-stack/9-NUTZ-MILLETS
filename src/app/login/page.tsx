@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -18,6 +18,8 @@ import Footer from "@/components/Footer";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
   const [user, setUser] = useState<any>(null);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -64,9 +66,13 @@ export default function LoginPage() {
         window.dispatchEvent(new Event("storage"));
 
         setTimeout(() => {
-          router.push(
-            data.user.role === "admin" ? "/admin" : "/shop"
-          );
+          if (redirect) {
+            router.push(redirect);
+          } else {
+            router.push(
+              data.user.role === "admin" ? "/admin" : "/shop"
+            );
+          }
         }, 1500);
       } else if (data.needsVerification) {
         setError(data.message);

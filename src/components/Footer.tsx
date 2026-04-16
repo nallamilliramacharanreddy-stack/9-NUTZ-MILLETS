@@ -111,9 +111,14 @@ export default function Footer() {
         </div>
         
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
-          <p className="text-[10px] uppercase font-black tracking-[0.2em] text-emerald-100/40">
-            © {currentYear} 9 Nutzz Millets. Handcrafted with heart.
-          </p>
+          <div className="flex flex-col items-center md:items-start gap-2">
+            <p className="text-[10px] uppercase font-black tracking-[0.2em] text-emerald-100/40 text-center md:text-left">
+              © {currentYear} 9 Nutzz Millets. Handcrafted with heart.
+            </p>
+            <p className="text-[9px] uppercase font-black tracking-[0.3em] text-brand-gold/60 text-center md:text-left">
+              Meet My Developer Team: <span className="text-white">Nallamilli Rama Charan Reddy</span>
+            </p>
+          </div>
           <div className="flex items-center gap-8">
             <Link href="/privacy" className="text-[10px] uppercase font-black tracking-widest text-emerald-100/40 hover:text-brand-gold transition-colors">Privacy</Link>
             <Link href="/terms" className="text-[10px] uppercase font-black tracking-widest text-emerald-100/40 hover:text-brand-gold transition-colors">Terms</Link>

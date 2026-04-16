@@ -33,20 +33,26 @@ export default function CheckoutPage() {
     const items = JSON.parse(localStorage.getItem("cart") || "[]");
     if (items.length === 0) {
       router.push("/cart");
+      return;
     }
     setCartItems(items);
+    
+    // Check if user is logged in
+    const userData = JSON.parse(localStorage.getItem("user") || "null");
+    if (!userData) {
+      router.push("/login?redirect=/checkout");
+      return;
+    }
+
     setLoading(false);
 
     // Auto-fill user data
-    const userData = JSON.parse(localStorage.getItem("user") || "null");
-    if (userData) {
-      setFormData(prev => ({
-        ...prev,
-        name: userData.name || "",
-        phone: userData.phone || "",
-        email: userData.email || ""
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      name: userData.name || "",
+      phone: userData.phone || "",
+      email: userData.email || ""
+    }));
   }, [router]);
 
   const updateQuantity = (id: string, delta: number) => {
